@@ -5,7 +5,7 @@
 
 ## 介绍
 
-可接入涂鸦平台的蓝牙协议包括:Tuya BLE 协议(简称:单点(单节点连接控制)、SIG Mesh 协议、Tuya Beacon 协议。
+可接入涂鸦平台的蓝牙协议包括：Tuya BLE 协议(简称：单点(单节点连接控制)、SIG Mesh 协议、Tuya Beacon 协议。
 
 其中 Tuya Beacon 协议相对于 Tuya BLE 和 SIG Mesh 非常精简,特别适合直接移植到各种 BLE Beacon 芯片上,实现 SoC 级别的低成本应用。
 
