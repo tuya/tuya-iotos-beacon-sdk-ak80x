@@ -11,7 +11,7 @@
 
 
 ## 如何使用
-[接入文档地址](./guide_cn.pdf)
+[接入文档地址](./guide_cn.pdf)  
 [涂鸦Beacon介绍文档地址](./tuya_beacon_introduce_cn.pdf)
 
 
