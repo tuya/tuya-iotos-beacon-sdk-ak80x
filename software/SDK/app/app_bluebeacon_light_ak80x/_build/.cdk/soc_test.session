@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Session Name="V:\0309\Tuya_IoTOS_Beacon_SDK_AK80x_V1.2\software\SDK\app\app_bluebeacon_light_ak80x\_build\soc_test.cdkws">
-  <int Value="0" Name="m_selectedTab"/>
-  <wxString Value="V:\0309\Tuya_IoTOS_Beacon_SDK_AK80x_V1.2\software\SDK\app\app_bluebeacon_light_ak80x\_build\soc_test.cdkws" Name="m_workspaceName"/>
-  <TabInfoArray Name="TabInfoArray"/>
-  <SerializedObject Name="m_breakpoints">
-    <long Value="0" Name="Count"/>
-  </SerializedObject>
-</Session>
