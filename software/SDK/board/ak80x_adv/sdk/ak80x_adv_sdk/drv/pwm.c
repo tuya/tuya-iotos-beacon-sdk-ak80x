@@ -50,6 +50,11 @@ void pwm_init()
     reg_val = read_reg( TOP_CLK_CTRL_REG );
     reg_val = reg_val | CLK_TIMER0_EN_MASK;
     write_reg( TOP_CLK_CTRL_REG, reg_val );
+    if(chip_verson_check())
+    {
+        write_reg(TOP_CTRL_BASE_ADDR+0x08,0x1);//timer clk set to 16MHz
+    }
+
 }
 
 void pwm_set_cycle( uint32_t timer_count)
@@ -170,7 +175,7 @@ void pwm_set_reverse_en(uint8_t pwm_x_cmpl_enable)
     write_reg(TIMER0_PWM_CONTROL, reg_val);
 }
 
-void pwm_set_dz(pwm_channel_t pwm_channel, uint8_t dead_zone_width)
+void pwm_set_dz(uint8_t dead_zone_enable, uint8_t dead_zone_width)
 {
     uint32_t reg_val = 0;
 
@@ -185,18 +190,8 @@ void pwm_set_dz(pwm_channel_t pwm_channel, uint8_t dead_zone_width)
     }
     write_reg( TIMER0_PWM_BOUND_VAL_REG, reg_val );
 
-#if 0
-    /* Reconfig duty cycle */
-    reg_val = pwm_get_duty( pwm_channel );
-    reg_val -= dead_zone_width << 2;
-    pwm_set_duty( pwm_channel, reg_val );
-#endif
-
     /* Enable dead zone */
-    reg_val = read_reg( TIMER0_PWM_BOUND_EN_REG );
-    reg_val &= PWM_BOUND_EN_0_MASK << (uint8_t)pwm_channel;
-    reg_val |= 1 << (uint8_t)pwm_channel;
-    write_reg( TIMER0_PWM_BOUND_EN_REG, reg_val );
+    write_reg( TIMER0_PWM_BOUND_EN_REG, dead_zone_enable );
 }
 
 uint8_t pwm_get_dz_status()

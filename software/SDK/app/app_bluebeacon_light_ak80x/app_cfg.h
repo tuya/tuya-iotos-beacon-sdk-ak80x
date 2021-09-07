@@ -25,11 +25,7 @@
 
 
 /****************************ABNORMAL PROTEC FUNCTION**************************/
-#ifndef DEBUG
-    #define ABNORMAL_PROTECTION_TYPE                    ENABLE
-#else
-    #define ABNORMAL_PROTECTION_TYPE                    DISABLE
-#endif
+#define ABNORMAL_PROTECTION_TYPE                    ENABLE
 
 #define SYS_CRASH_WTD_RESET_ENABLE					DISABLE
 #if(SYS_CRASH_WTD_RESET_ENABLE)
@@ -44,11 +40,7 @@
 
 
 /******************************LOG DEBUG FUNCTION******************************/
-#ifndef DEBUG
-    #define LOG_ENABLE								    DISABLE    //default disable log  XXX
-#else
-    #define LOG_ENABLE                                  ENABLE
-#endif
+#define LOG_ENABLE								    DISABLE//ENABLE//DISABLE //ENABLE//DISABLE//DISABLE//ENABLE//DISABLE//default disable log  XXX
 
 #if(LOG_ENABLE)
 #define LOG_LEVEL									LOG_LEVEL_MAJOR	//selection the log level

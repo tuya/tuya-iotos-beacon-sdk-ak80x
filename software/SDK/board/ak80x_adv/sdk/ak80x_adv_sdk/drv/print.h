@@ -34,8 +34,7 @@ void myPrintf(char *s, ...);
 
 #else   // DEBUG
 
-#define print   /\
-/myPrintf
+#define print   //myPrintf
 
 #endif
 

@@ -437,6 +437,13 @@ void rf_set_bbram_mode( bbram_mode_t bbram_model );
 void rf_set_rx_tx_mode( rx_tx_mode_t rx_tx_model );
 void rf_init(void);
 void rf_start(void);
+
+void rf_start_in_odd_frequency_point(void);
+void rf_set_recv_in_odd_frequency_point(void);
+void rf_set_odd_to_normal(void);
+uint8_t rf_frequency_corresponds_to_channel(uint16_t freq);
+
+
 uint8_t rf_get_buffer_offset(void);
 uint8_t rf_get_buffer_status(void);
 uint8_t rf_get_int_status(void);

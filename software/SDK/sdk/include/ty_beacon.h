@@ -29,6 +29,14 @@ typedef enum{
 	DEVICE_STATE_REP_GET_PAIRING_OK	
 }state_machine_e;
 
+typedef enum{
+    BEACON_EVENT_PAIR_OK = 0x00,
+    BEACON_EVENT_RESET,
+    BEACON_EVENT_GROUP_ADD_SUCCESS,
+    BEACON_EVENT_GROUP_ADD_ERR,
+    BEACON_EVENT_GROUP_DEL_SUCCESS,
+}ty_beacon_event_e;
+
 //mac 6 bytes
 //pid 8 bytes
 //authkey 16 bytes (authkey[0~16],authkey total 32 bytes)
@@ -41,6 +49,7 @@ u8 ty_beacon_start_pairing(void);
 state_machine_e ty_beacon_get_state(void);
 u8 ty_beacon_run(void);
 
+void __attribute__((weak)) ty_beacon_event_cb(ty_beacon_event_e e, void *params);
 void __attribute__((weak)) ty_beacon_enter_test_mode_cb(u8 rssi);
 
 #endif

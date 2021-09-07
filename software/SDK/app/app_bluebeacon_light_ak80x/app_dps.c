@@ -407,12 +407,55 @@ void app_dps_download(unsigned char dpid, unsigned char dpty, unsigned char dple
     }
 }
 
+void app_ir_cmd(unsigned int code,uint8_t long_press_time_s){
+#ifndef DEBUG
+	switch(code){
+        case KEY_LUM_ADD:{
+			light_value.V+=100;
+			if(light_value.V > 1000) light_value.V = 1000;
+                         }break;
+        case KEY_LUM_DEC:{
+            light_value.V-=100;
+			if(light_value.V < 0) light_value.V = 0;
+                         }break;
+		case KEY_OFF:set_onoff(0);break;
+		case KEY_ON:set_onoff(1);break;
+		case KEY_R:light_value.H=0,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_G:light_value.H=120,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_B:light_value.H=240,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_W:light_value.H=0,light_value.S=0,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_1:light_value.H=338,light_value.S=883,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_2:light_value.H=80,light_value.S=750,light_value.V=1000;light_value.scene_mode=0;break;break;
+		case KEY_COLOR_3:light_value.H=223,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_4:light_value.H=23,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_5:light_value.H=158,light_value.S=47,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_6:light_value.H=248,light_value.S=565,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_7:light_value.H=56,light_value.S=502,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_8:light_value.H=182,light_value.S=656,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_9:light_value.H=280,light_value.S=755,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_10:light_value.H=60,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_11:light_value.H=180,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_COLOR_12:light_value.H=300,light_value.S=1000,light_value.V=1000;light_value.scene_mode=0;break;
+		case KEY_SCENE_FLASH:light_value.S=1000,light_value.V=1000;light_value.scene_mode = 6;break;
+		case KEY_SCENE_STROBE:light_value.S=1000,light_value.V=1000;light_value.scene_mode = 7;break;
+		case KEY_SCENE_FADE:light_value.S=1000,light_value.V=1000;light_value.scene_mode = 8;break;
+		case KEY_SCENE_SMOOTH:light_value.S=1000,light_value.V=1000;light_value.scene_mode = 9;break;
+		default:break;
+	}
+#endif
+	if(code == KEY_ON && long_press_time_s > 4){
+		ty_beacon_start_pairing();
+	}
+}
+
 void app_light_init(void){
 	app_dps_read_from_storage();
 }
 
 void app_light_run(void){
 	static u32 T = 0;
+	static u32 pre_time;
+	static u8 pre_ir_io_state;
 	
 	if(ty_beacon_get_state() == DEVICE_STATE_PAIRING){
 		if(hal_clock_time_exceed(T,1000000)){
@@ -453,4 +496,35 @@ void app_light_run(void){
 	}
 	scene_run();
 	app_light_reset_run();
+	
+	if(ir_code_get){
+		u32 now_time = hal_clock_get_system_tick()/HAL_CLOCK_1MS_TICKS;
+		u8 now_state = gpio_get_bits(BIT6);
+		if(ir_code_get == 1){
+			pre_time = now_time;
+			pre_ir_io_state = now_state;
+			ir_code_get = 2;
+		}else{
+			if(now_time-pre_time > 110){
+				#if LOG_MAJOR
+					print("%x\r\n",ir_code);
+				#endif
+				app_ir_cmd(ir_code,ir_code_get/9);
+				ir_code_get = 0;
+			}else if(pre_ir_io_state != now_state){
+				pre_ir_io_state = now_state;
+				u32 x = now_time-pre_time;
+				if(now_state == 0 && x > 90){//HIGH > 90 ms
+					ir_code_get++;
+					print("long press %d s\r\n",ir_code_get/9);
+					
+					if(ir_code_get/9 > 4){
+						app_ir_cmd(ir_code,ir_code_get/9);
+						ir_code_get = 0;
+					}
+				}
+				pre_time = now_time;
+			}
+		}
+	}
 }

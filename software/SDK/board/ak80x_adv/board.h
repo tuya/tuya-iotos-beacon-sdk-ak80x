@@ -16,6 +16,7 @@
 #include "hal_sys.h"
 #include "hal_types.h"
 //#include "hal_uart.h"
+#include "hal_storage_256.h"
 
 
 #endif

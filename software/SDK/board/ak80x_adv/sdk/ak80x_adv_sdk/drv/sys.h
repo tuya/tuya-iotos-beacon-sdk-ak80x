@@ -203,7 +203,6 @@ extern "C" {    // allow C++ to use these headers
 #define PAD_GPIO_19                         (PAD_MUX_BASE_ADDR + 0x4C)
 
 
-
 typedef enum cpu_clock_sel_s
 {
     CPU_CLOCK_2M        = 0,
@@ -256,6 +255,7 @@ typedef enum sys_clock_ctrl
 void sys_set_port_mux(uint32_t port, uint8_t function);
 void sys_set_module_clock(sys_clock_ctrl_t clock_sel, uint8_t on_off);
 void sys_soft_reset(uint8_t module);
+uint8_t chip_verson_check(void);
 void sys_set_clock(cpu_clock_sel_t clock);
 void sys_init(void);
 void sys_sleep_down(void);

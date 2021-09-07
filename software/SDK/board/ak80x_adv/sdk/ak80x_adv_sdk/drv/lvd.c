@@ -49,6 +49,19 @@ void lvd_module_select(void)
 	uint32_t reg_val =0;
 	reg_val = read_reg(MODULE_MODE_REG);
 	reg_val |= LVD_EN;
+    
+    if(chip_verson_check())
+    {
+        if(!(reg_val & TOP_WATCH_DOG_ON_MASK))
+        {
+            reg_val |= TOP_WATCH_DOG_ON_MASK;
+        }
+        else
+        {
+            reg_val &= ~TOP_WATCH_DOG_ON_MASK;
+        }
+
+    }
 	write_reg(MODULE_MODE_REG,reg_val);
 }
 void int_type_cfg(uint32_t irq_bit)

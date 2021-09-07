@@ -60,25 +60,51 @@ void watchdog_enable(void)
 {
 	uint32_t reg =0;
 	reg = read_reg(WATCHDOG_MODULE_SELECT_REG);
-	reg |= WDG_EN;//WDG_EN;
+
+    if(chip_verson_check())//Ak801_M
+    {
+        reg &= ~WDG_EN;//WDG_EN;
+    }
+    else
+    {
+        reg |= WDG_EN;//WDG_EN;
+    }
+
 	write_reg(WATCHDOG_MODULE_SELECT_REG,reg);
 }
 void watchdog_disable(void)
 {
 	uint32_t reg =0;
 	reg = read_reg(WATCHDOG_MODULE_SELECT_REG);
-	reg &= ~WDG_EN;//WDG_EN;
+    if(chip_verson_check())//AK801_M
+    {
+        reg |= WDG_EN;//WDG_EN;
+    }
+    else
+    {
+        reg &= ~WDG_EN;//WDG_EN;
+    }
 	write_reg(WATCHDOG_MODULE_SELECT_REG,reg);
 
 }
 void watchdog_init(uint32_t nms)
 {
+    uint32_t tmp_low13_bit =0;
     uint32_t reg = 0;
     reg = nms<<5;//T = reg/32000 (s)
+
+    if(chip_verson_check())
+    {
+        /*Watchdog reset value high 11bit negate*/
+        tmp_low13_bit = (reg&0x1FFF);
+        
+        reg = (~((reg>>13)&0x7FF))<<13;
+        reg |=tmp_low13_bit;
+    }
+
     set_wdg_comp_value(reg);
     set_wdg_comp_value_vld();
     watchdog_enable();
-    int_enable_irq(INT_WDT_EN_MASK);
 }
 
 ATTRIBUTE_ISR ATTRIBUTE_WEAK void wdt_isr()

@@ -99,6 +99,8 @@ __heap_end:
 .weak   core_timer_isr
 .weak   lvd_l_isr
 .weak   lvd_h_isr
+.weak   wtd_enable
+.weak   error_handler
 /*
  * default service routine
  */
@@ -195,10 +197,98 @@ Reset_Handler:
 	 */
 	lrw		a3,	0x80000100
 	mtcr	a3, psr
+	
+	movi      	r2, 201
+delay_us_loop:
+	.rept 10
+	nop
+	.endr
+	subi      	r2, 1
+	zextb      	r2, r2
+	cmpnei      	r2, 0
+	bt      	delay_us_loop
+	
+	/*Judge chip version*/
+	lrw      	r1, 0x40120180	
+	ld.w      	r3, (r1, 0x10)
+	cmpnei      	r3, 0
+	bt      	jg_loop0
+	lrw      	r3, 0x60000000	
+	ld.w      	r0, (r3, 0x1c)
+	movi      	r2, 0x55
+	cmpne      	r0, r2
+	bt      	jg_loop1
+	br      	ak801m_pro
+jg_loop1:
+	ld.w      	r1, (r1, 0xc)
+	cmpnei      	r1, 0x1c
+	bt      	jg_loop2
+	st.w      	r2, (r3, 0x1c)
+	br      	ak801m_pro
+jg_loop2:
+	movi      	r2, 0xAA
+	st.w      	r2, (r3, 0x1c)
+	br      	ak801h_pro
+jg_loop0:
+	lrw      	r3, 0x60000000	
+	ld.w      	r2, (r3, 0x1c)
+	movi      	r3, 0x55
+	cmpne      	r2, r3
+	bt      	ak801h_pro
+	br      	ak801m_pro
 
-	/*Configure the watchdog time*/
+/*Power on Strategy*/
+ak801m_pro:
+	#if 0
+	movi      	r2, 201
+delay_us_loop:
+	.rept 10
+	nop
+	.endr
+	subi      	r2, 1
+	zextb      	r2, r2
+	cmpnei      	r2, 0
+	bt      	delay_us_loop
+	#endif
+	/*Configure the clk*/
+	lrw      	r3, 0x40120100
+	movi      	r2, 160
+	st.w      	r2, (r3, 0x34)
+
+	.rept 10
+	nop
+	.endr
+	
+	movi      	r2, 248
+	st.w      	r2, (r3, 0x34)
+	
+	/*TOP_VDD_VCO_REG_0*/
+	movi      	r2, 0x12
+	st.w      	r2, (r3, 0x1c)
+	/*TOP_VDD_VCO_REG_1*/
+	movi      	r2, 0x37
+	st.w      	r2, (r3, 0x20)
+	
+	movi      	r2, 101
+delay_us_loop1:
+	.rept 10
+	nop
+	.endr
+	subi      	r2, 1
+	zextb      	r2, r2
+	cmpnei      	r2, 0
+	bt      	delay_us_loop1
+	/*disable watchdog*/
+	lrw      	r3, 0x40120100
+	movi      	r2, 20
+	st.w      	r2, (r3, 0x8c)
+	br next_state_flag0
+
+ak801h_pro:
+	/*ak801 wdt enable*/
 	jbsr wtd_enable
-
+	
+next_state_flag0:
 	/*
 	 * Setup initial vector base table for interrupts and exceptions
 	 */
@@ -242,9 +332,12 @@ TLB_Ins_Empty_Handler:
 TLB_Data_Empty_Handler:
 empty_handler:
 Default_handler:
-	//br Reset_Handler
-	lrw a0,	error_handler
-	jsr a0
-	lrw a0,	Reset_Handler
-	jsr a0
+	lrw         r3,0x60000000
+	ld.w        r2, (r3, 0x1c)
+	movi        r1, 0xAA
+	cmpne       r2, r1
+	bt  next_state_flag1
+	jbsr error_handler
+next_state_flag1:
+	br Reset_Handler
 	rte

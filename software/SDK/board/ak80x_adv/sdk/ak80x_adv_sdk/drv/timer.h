@@ -16,9 +16,10 @@
 
 #ifndef   __TIMER_H_
 #define   __TIMER_H_
-#include "type.h"
-/* Includes -----------------------------------------------------*/
 
+/* Includes -----------------------------------------------------*/
+#include "config.h"
+#include "type.h"
 /* Macro --------------------------------------------------------*/
 
 /* Registers ----------------------------------------------------*/
@@ -87,18 +88,7 @@
 #define TOP_TIMER1_CLK_SEL_SHIFT            (0)
 
 #define TIMER_CLK_SEL						(0x40120108)
-#define TIMER0_CLK_16M						(0x00)
-#define TIMER0_CLK_8M						(0x01)
-#define TIMER0_CLK_4M						(0x02)
-#define TIMER0_CLK_2M						(0x03)
-#define TIMER1_CLK_16M						(0x00)
-#define TIMER1_CLK_8M						(0x04)
-#define TIMER1_CLK_4M						(0x08)
-#define TIMER1_CLK_2M						(0x0C)
-#define TIMER2_CLK_16M						(0x00)
-#define TIMER2_CLK_8M						(0x10)
-#define TIMER2_CLK_4M						(0x20)
-#define TIMER2_CLK_2M						(0x30)
+
 //function define
 #define TIMER_EN_ENABLE				        (0x01)//BIT[0]
 #define TIMER_EN_DISABLE			        (0x00)
@@ -122,15 +112,13 @@ enum timer_e
     TIMER1,
     TIMER2
 };
-
-enum timer_clock_e
+ enum timer_clock_e
 {
     TIMER_CLOCK_16M     = 0,
     TIMER_CLOCK_8M      = 1,
     TIMER_CLOCK_4M      = 2,
     TIMER_CLOCK_2M      = 3
 };
-
 void timer0_init(uint8_t clk_sel,uint32_t timer_load_count);
 void timer1_init(uint8_t clk_sel,uint32_t timer_load_count);
 void timer2_init(uint8_t clk_sel,uint32_t timer_load_count);

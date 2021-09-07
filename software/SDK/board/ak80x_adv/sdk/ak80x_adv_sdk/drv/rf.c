@@ -176,7 +176,7 @@ void rf_set_rx_len(     bb_channel_t channel_index,
 
 void rf_init()
 {
-    uint32_t reg_val = 0;
+    uint32_t reg_val = 0, n = 400;
 
     /* Clock enable */
     sys_set_module_clock( CLK_BB_EN_MASK, ON );
@@ -281,11 +281,137 @@ void rf_init()
     write_reg( BB_REG_AC_CORRELATOR_REG, reg_val );
 
     write_reg(0x40070024, 0x361dff);
+    /*To ensure the correctness of the first packet,tx without power amplified for a time*/
+    write_reg(CORE_CTRL_BASE_ADDR,0X0F);
+    n =400;
+    while ( n-- )
+    {
+        asm("nop"); asm("nop"); asm("nop"); asm("nop");
+        asm("nop"); asm("nop"); asm("nop"); asm("nop");
+        asm("nop"); asm("nop");
+
+    }
+    write_reg(CORE_CTRL_BASE_ADDR, 0X01);
 }
 
 void rf_start()
 {
     write_reg(BB_START_P_REG, 1);
+}
+
+void rf_start_in_odd_frequency_point(void)
+{
+    write_reg(0x40070080, 0x0);//bb crtl signal from software mode 
+    write_reg(0x40020000, 0x27);//rf crtl signal from software mode 
+
+    uint32_t reg_val =0;
+    /*0x40070088 Bit[15:8] =150 ,rx rf wait time set to 150us*/
+    reg_val =0;
+    reg_val =read_reg(0x40070088);
+    reg_val &= ~0xFF00;
+    reg_val |= 150<<8;
+    write_reg(0x40070088, reg_val);
+
+    /**/
+    reg_val =0;
+    reg_val =read_reg(0x40070084);
+    reg_val |=1<<31;//en_trx signal set 1 by software
+    //reg_val &=~(1<<30);//normal
+    reg_val |=(1<<30);////rxb_tx signal set 1 by software
+    write_reg(0x40070084, reg_val);
+    delay_us(100);
+
+    write_reg(BB_START_P_REG, 1);
+
+    delay_us(100);
+    reg_val =0;
+    reg_val =read_reg(0x40070084);
+
+    reg_val |=1<<28;//set start_adc set 1 by software
+    write_reg(0x40070084, reg_val);
+
+}
+void rf_set_recv_in_odd_frequency_point(void)
+{
+    uint32_t reg_val =0;
+    
+    reg_val =read_reg(0x40070084);
+    reg_val &=~(1<<28);
+    write_reg(0x40070084, reg_val);
+    delay_us(100);
+    reg_val =0;
+    reg_val =read_reg(0x40070084);
+    reg_val &=~(1<<31);
+    reg_val |=(1<<30);
+
+    write_reg(0x40070084, reg_val);
+}
+void rf_set_odd_to_normal(void)
+{
+    uint32_t reg_val =0;
+    
+    reg_val =read_reg(0x40070084);
+    reg_val &=~(1<<28);
+    write_reg(0x40070084, reg_val);
+    delay_us(100);
+    reg_val =0;
+    reg_val =read_reg(0x40070084);
+    reg_val &=~(1<<31);
+    reg_val &=~(1<<30);
+    write_reg(0x40070084, reg_val);
+
+
+    write_reg(0x40070080, 0x1);//bb crtl signal from software mode 
+    write_reg(0x40020000, 0x1);//rf crtl signal from software mode 
+}
+
+uint8_t rf_frequency_corresponds_to_channel(uint16_t freq)
+{
+    uint8_t ret =0;
+    uint16_t tmp_frq = 0;
+    tmp_frq = freq - 2402;
+
+    if((tmp_frq > 80)&&(tmp_frq < 84))
+    {
+        return;
+    }
+    else if(tmp_frq >= 84)
+    {
+        tmp_frq -=4;
+    }
+    
+    if(tmp_frq%2)
+    {
+        tmp_frq =tmp_frq - 1;
+    }
+    
+    tmp_frq = tmp_frq/2;
+    
+    if(tmp_frq == 0x0)
+    {
+        ret = 37;
+    }
+    else if((tmp_frq>0)&&(tmp_frq<12))
+    {
+        ret = tmp_frq - 1;
+    }
+    else if(tmp_frq ==12)
+    {
+        ret =38;
+    }
+    else if((tmp_frq>12)&&(tmp_frq<39))
+    {
+        ret = tmp_frq - 2;
+    }
+    else if(tmp_frq ==39)
+    {
+        ret =39;
+    }
+    else 
+    {
+        ret = tmp_frq;
+    }
+    return ret;
 }
 
 uint8_t rf_get_buffer_offset()
@@ -511,6 +637,19 @@ inline void rf_set_bb_mode( rf_bb_mode_t rf_bb_mode)
     reg_val = read_reg(TOP_MODULE_MODE_REG);
     reg_val &= ~TOP_RF_BB_MODE_MASK;
     reg_val |= rf_bb_mode << TOP_RF_BB_MODE_SHIFT;
+
+    if(chip_verson_check())
+    {
+        if(!(reg_val & TOP_WATCH_DOG_ON_MASK))
+        {
+            reg_val |= TOP_WATCH_DOG_ON_MASK;
+        }
+        else
+        {
+            reg_val &= ~TOP_WATCH_DOG_ON_MASK;
+        }
+
+    }
 
     write_reg(TOP_MODULE_MODE_REG, reg_val);
 };

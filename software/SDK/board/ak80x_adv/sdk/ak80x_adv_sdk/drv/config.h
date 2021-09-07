@@ -26,11 +26,18 @@
 //
 #define FPGA_801        (0)
 #define ASIC_801        (1)
+#define ASIC_801_M      (11)
 
 #define FPGA_802        (2)
 #define ASIC_802        (3)
 
 #define PLATFORM        ASIC_801
+
+//
+//  SOFT_VERSION
+//
+#define SDK_VERSION     (0x00020004)//V2.0.4
+
 
 //
 //  Module config
@@ -41,11 +48,11 @@
 
 //#define SOP16
 
-//#define DEBUG  //XXX
+//#define DEBUG
 
 
 
-//#define MODULE_TEST
+#define MODULE_TEST
 //#define     ENABLE_JTAG
 
 

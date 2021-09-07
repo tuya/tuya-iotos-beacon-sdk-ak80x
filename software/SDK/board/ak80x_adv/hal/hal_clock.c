@@ -30,12 +30,21 @@ AK801 can only use core timer(@16MHz,24Bit),max 1048ms
 extern volatile uint32_t core_timer_count_ms;
 
 u32 hal_clock_get_system_tick(void){
-    unsigned int tick_ms;
-	tick_ms = core_timer_count_ms+(CLOCK_SYS_CLOCK_HZ - get_core_timer_value())/(CLOCK_SYS_CLOCK_HZ/1000);//core timer is a down counter,ticks to ms
+    unsigned int tick_us;
+	tick_us = core_timer_count_ms*HAL_CLOCK_1MS_TICKS+(CLOCK_SYS_CLOCK_HZ - get_core_timer_value());//core timer is a down counter,ticks to ms
 
-    return tick_ms*HAL_CLOCK_1MS_TICKS;//tick
+    return tick_us;//tick
 }
 
 u32 hal_clock_time_exceed(u32 ref, u32 span_us){
-    return ((hal_clock_get_system_tick() - ref) > span_us*HAL_CLOCK_1US_TICKS); 
+	u32 tick_temp = hal_clock_get_system_tick();
+	
+	if(tick_temp >= ref)
+	{
+		return ((tick_temp - ref) > span_us*HAL_CLOCK_1US_TICKS); 
+	}else{
+		return ((0xFFFFFFFF - ref + tick_temp) > span_us*HAL_CLOCK_1US_TICKS);
+	}
 }
+
+

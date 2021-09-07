@@ -52,14 +52,50 @@ void sys_soft_reset( uint8_t module )
     reg_val &= ~module;
     write_reg(TOP_SOFT_RESET_REG, reg_val);
 }
+uint8_t chip_verson_check(void)
+{
+    uint32_t    reg_val = 0;
+	uint8_t     ret =0;
+    reg_val = read_reg(0x6000001C);
+	if(0x55 == reg_val)
+	{
+		ret =1;
+	}
+    return ret;
+}
 
 void sys_set_clock( cpu_clock_sel_t clock )
 {
     uint32_t    reg_val = 0;
+    uint8_t tmp_val = clock;
 
     reg_val = read_reg( TOP_MODULE_MODE_REG );
     reg_val &= ~TOP_CPU_CLK_SEL_MASK;
-    reg_val |= clock << TOP_CPU_CLK_SEL_SHIFT;
+    //reg_val |= clock << TOP_CPU_CLK_SEL_SHIFT;
+    if(chip_verson_check())
+    {
+        if(0 == clock)
+        {
+            tmp_val = 1;
+        }
+        else
+        {
+            tmp_val = 2;
+        }
+        
+        if(!(reg_val & TOP_WATCH_DOG_ON_MASK))
+        {
+            reg_val |= TOP_WATCH_DOG_ON_MASK;
+        }
+        else
+        {
+            reg_val &= ~TOP_WATCH_DOG_ON_MASK;
+        }
+
+    }
+
+    reg_val |= tmp_val << TOP_CPU_CLK_SEL_SHIFT;
+
     write_reg( TOP_MODULE_MODE_REG, reg_val );
 }
 
@@ -80,7 +116,7 @@ void sys_init()
     write_reg(ABB_LL,   0x76);
     write_reg(ABB_MH,   0x83);
 
-    write_reg(TOP_CTRL_GAIN_DAC_INI_ADDR,           0x57);
+    write_reg(TOP_CTRL_GAIN_DAC_INI_ADDR,0x57);
     //write_reg(TOP_CTRL_PLL_DIGITAL_FVCO_INI_ADDR,   0x02);//The register value should be set to the reset value(0x15)
 
 #ifdef  SOP16

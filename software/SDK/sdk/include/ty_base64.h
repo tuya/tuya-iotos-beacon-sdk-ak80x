@@ -8,6 +8,7 @@
 #ifndef _TY_BASE64_H
 #define _TY_BASE64_H
 
+unsigned char *ty_base64_encode(unsigned char *res, unsigned char data_len, unsigned char *code);
 unsigned char *ty_base64_decode(unsigned char *code, unsigned char data_len, unsigned char *res);
 
 #endif

@@ -27,7 +27,7 @@
 
 /* Extern -------------------------------------------------------*/
 #ifdef  DEBUG
-extern bool        uart_inited;
+bool        uart_inited;
 #endif //#ifdef  DEBUG
 /* Functions ----------------------------------------------------*/
 
@@ -179,16 +179,16 @@ void uart_init(uart_baud_rate_t baud_rate_index)
     uint32_t    reg_val = 0;
 
     /* Set Port Mux as Uart*/
-#ifdef  DEBUG
+//#ifdef  DEBUG
     //sys_set_port_mux(PAD_GPIO_00, PAD_MUX_FUNCTION_2 | 3);
     //sys_set_port_mux(PAD_GPIO_01, PAD_MUX_FUNCTION_2 | 3);
 
     sys_set_port_mux(PAD_GPIO_14, PAD_MUX_FUNCTION_3 | 2);  //RXD
     sys_set_port_mux(PAD_GPIO_15, PAD_MUX_FUNCTION_3);      //TXD
-#else
-    sys_set_port_mux(PAD_GPIO_00, PAD_MUX_FUNCTION_1);      //RXD
-    sys_set_port_mux(PAD_GPIO_01, PAD_MUX_FUNCTION_1);      //TXD
-#endif
+//#else
+//    sys_set_port_mux(PAD_GPIO_00, PAD_MUX_FUNCTION_1);      //RXD
+//    sys_set_port_mux(PAD_GPIO_01, PAD_MUX_FUNCTION_1);      //TXD
+//#endif
 
     /* Clock enable */
     sys_set_module_clock( CLK_UART_EN_MASK, ON );
@@ -214,6 +214,24 @@ void uart_init(uart_baud_rate_t baud_rate_index)
 	reg_val = read_reg( TOP_MODULE_MODE_REG );
 	reg_val &= TOP_CPU_CLK_SEL_MASK;
 	reg_val = reg_val >> TOP_CPU_CLK_SEL_SHIFT;
+        
+    if(chip_verson_check())//AK801_M
+    {
+        if(2 == reg_val)
+        {
+            reg_val =3;
+        }
+        else if(1 == reg_val)
+        {
+            reg_val =0;
+            baud_rate_index = UART_BAUDRATE_9600;
+        }
+        else
+        {
+            return;
+        }
+
+    }
 
 	/*divisor = (freq / baudrate + 7) >> 4,freq = 2000000<<reg_val*/
 #if 0
@@ -253,6 +271,9 @@ void uart_init(uart_baud_rate_t baud_rate_index)
 
     /* Enable RX interrupt */
     write_reg(UART_IER_ADDR, 1);
+#ifdef	DEBUG
+    uart_inited = TRUE;
+#endif
 }
 
 #if 0 //table look-up scheme
@@ -284,6 +305,23 @@ void uart_set_baudrate( uart_baud_rate_t baud_rate_index)
 	reg_val = read_reg( TOP_MODULE_MODE_REG );
 	reg_val &= TOP_CPU_CLK_SEL_MASK;
 	reg_val = reg_val >> TOP_CPU_CLK_SEL_SHIFT;
+
+    if(chip_verson_check())
+    {
+        if(2 == reg_val)
+        {
+            reg_val =3;
+        }
+        else if(1 == reg_val)
+        {
+            reg_val =0;
+        }
+        else
+        {
+            return;
+        }
+
+    }
 
     /*divisor = ( freq / baudrate + 7 ) >> 4 */
     reg_val = ((2000000<<reg_val) / baud_rate_index + 7)>>4;//freq = 2000000<<reg_val

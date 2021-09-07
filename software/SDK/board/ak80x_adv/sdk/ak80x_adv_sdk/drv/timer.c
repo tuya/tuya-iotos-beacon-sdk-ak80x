@@ -54,12 +54,12 @@ void timer_clk_config(uint8_t clk_sel)
 void timer_clk_config(uint8_t timer, uint8_t clk_sel)
 {
 	uint32_t reg_val =0;
-
+    uint8_t tmp_val = clk_sel;
 	reg_val =read_reg(TIMER_CLK_SEL);
 
 #if 1
 	reg_val &= ~(TOP_TIMER1_CLK_SEL_MASK<<(timer<<1));
-    reg_val |= clk_sel << (timer<<1);
+    //reg_val |= clk_sel << (timer<<1);
 #else
 	switch( timer )
 	{
@@ -82,6 +82,23 @@ void timer_clk_config(uint8_t timer, uint8_t clk_sel)
         break;
 	}
 #endif
+    if(chip_verson_check())
+    {
+        if(0 == clk_sel)
+        {
+            tmp_val =1;
+        }
+        else if(3 == clk_sel)
+        {
+            tmp_val =2;
+        }
+        else
+        {
+            tmp_val =2;
+        }
+    }
+
+    reg_val |= tmp_val << (timer<<1);
 
 	write_reg(TIMER_CLK_SEL,reg_val);
 }
@@ -90,9 +107,25 @@ void timer_clk_config(uint8_t timer, uint8_t clk_sel)
 
 void timer0_init(uint8_t clk_sel,uint32_t timer_load_count)
 {
+    uint32_t reg_val =timer_load_count;
 	timer_clk_config(TIMER0, clk_sel);
     sys_set_module_clock(CLK_TIMER0, ON); //????$)A6i?
-    write_reg(TIMER0_LOAD_COUNT_ADDR, timer_load_count); //$)Ah.>g=.e.???(e???
+    if(chip_verson_check())
+    {
+        if(1 == clk_sel)
+        {
+            reg_val = timer_load_count>>2;
+        }
+        else if(2== clk_sel)
+        {
+            reg_val = timer_load_count>>1;
+        }
+        else
+        {
+            reg_val = timer_load_count;
+        }
+    }
+    write_reg(TIMER0_LOAD_COUNT_ADDR, reg_val); //$)Ah.>g=.e.???(e???
     write_reg(TIMER0_CONTROL_REG, TIMER_EN_ENABLE|EX_RELOAD_EN_ENABLE | TIMER_INPUT_MASK_DISABLE);
     read_reg(TIMER0_EOI);//clear int
     int_enable_irq(INT_TIM0_EN_MASK);
@@ -100,18 +133,50 @@ void timer0_init(uint8_t clk_sel,uint32_t timer_load_count)
 
 void timer1_init(uint8_t clk_sel,uint32_t timer_load_count)
 {
+    uint32_t reg_val =timer_load_count;
 	timer_clk_config(TIMER1, clk_sel);
     sys_set_module_clock(CLK_TIMER1, ON); //????$)A6i?
-    write_reg(TIMER1_LOAD_COUNT_ADDR, timer_load_count);//$)Ah.>g=.e.???(e???
+    if(chip_verson_check())
+    {
+        if(1 == clk_sel)
+        {
+            reg_val = timer_load_count>>2;
+        }
+        else if(2== clk_sel)
+        {
+            reg_val = timer_load_count>>1;
+        }
+        else
+        {
+            reg_val = timer_load_count;
+        }
+    }
+    write_reg(TIMER1_LOAD_COUNT_ADDR, reg_val);//$)Ah.>g=.e.???(e???
     write_reg(TIMER1_CONTROL_REG, TIMER_EN_ENABLE|EX_RELOAD_EN_ENABLE | TIMER_INPUT_MASK_DISABLE);
     read_reg(TIMER1_EOI);//clear int
     int_enable_irq(INT_TIM1_EN_MASK);
 }
 void timer2_init(uint8_t clk_sel,uint32_t timer_load_count)
 {
+    uint32_t reg_val =timer_load_count;
 	timer_clk_config(TIMER2, clk_sel);
     sys_set_module_clock(CLK_TIMER2, ON); //????$)A6i?
-    write_reg(TIMER2_LOAD_COUNT_ADDR, timer_load_count);//$)Ah.>g=.e.???(e???
+    if(chip_verson_check())
+    {
+        if(1 == clk_sel)
+        {
+            reg_val = timer_load_count>>2;
+        }
+        else if(2== clk_sel)
+        {
+            reg_val = timer_load_count>>1;
+        }
+        else
+        {
+            reg_val = timer_load_count;
+        }
+    }
+    write_reg(TIMER2_LOAD_COUNT_ADDR, reg_val);//$)Ah.>g=.e.???(e???
     write_reg(TIMER2_CONTROL_REG, TIMER_EN_ENABLE|EX_RELOAD_EN_ENABLE | TIMER_INPUT_MASK_DISABLE);
     read_reg(TIMER2_EOI);//clear int
     int_enable_irq(INT_TIM2_EN_MASK);

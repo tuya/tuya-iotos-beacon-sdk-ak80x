@@ -16,7 +16,7 @@
 
 volatile uint8_t	tx_channel = 37;
 volatile uint8_t	tx_channel_offset = 0;
-uint8_t 			*DEFAULT_BLE_MAC = 0x3FE4;
+uint8_t 			*DEFAULT_BLE_MAC = (uint8_t *)0x3FE4;
 str_adv_fifo 		adv_fifo[ADV_FIFO_MAX_NUM];
 
 volatile uint32_t 	send_adv_timer_count = 0x0;

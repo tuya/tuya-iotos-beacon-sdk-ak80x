@@ -105,7 +105,7 @@ uint32_t 	pwm_get_duty(pwm_channel_t pwm_channel);
 error_t 	pwm_set_cycle_div(pwm_channel_t pwm_channel,pwm_cycle_div_t cycle_div);
 uint8_t 	pwm_get_cycle_div( pwm_channel_t pwm_channel);
 void 		pwm_set_reverse_en(uint8_t enable);
-void        pwm_set_dz(pwm_channel_t pwm_channel, uint8_t dead_zone_width);
+void        pwm_set_dz(uint8_t dead_zone_enable, uint8_t dead_zone_width);
 uint8_t 	pwm_get_dz_status();
 uint8_t 	pwm_get_dz_width();
 #endif  // #ifndef   __PWM_H_

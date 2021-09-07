@@ -40,6 +40,17 @@
 #include "e2prom_access.h"
 
 
+void btn_init(void){
+  	sys_set_port_mux(PAD_GPIO_06, PAD_MUX_FUNCTION_0|0x03); //设置IO的功能,并使能上拉
+	gpio_set_bit_direction(BIT6, GPIO_INPUT);   			//设置GPIO为输入引脚
+    gpio_set_irq_type(GPIO_EDGE_SENSITIVE,BIT6);			//配置为边沿产生中断
+    set_int_polarity(GPIO_LOW_LEVEL_OR_FALLING_EDGE,BIT6);	//配置为下降沿产生中断
+    gpio_enable_irq(BIT6);									//使能GPIO6中断功能
+    gpio_clear_irq(BIT6);									//为防止使能后马上进入中断，应先清除GPIO6的中断标志
+ 
+    int_enable_irq(INT_GPIO_EN_MASK);	
+}
+
 void main(void)
 {
 	sys_init();
@@ -96,18 +107,42 @@ void main(void)
 #endif
 
 #ifndef DEBUG
-	#define AUTHKEY_RELEASE 1
+	#define AUTHKEY_X 1
 #else
-	#define AUTHKEY_TEST 1
+	#define AUTHKEY_12 1
 #endif
 	
-#if AUTHKEY_RELEASE//EEPROM
+#if AUTHKEY_X//EEPROM
 	u8 * authkey = 0x3FC4;
 	u8 * mac = 0x3FE4;
 #endif
-#if AUTHKEY_TEST//IOS  TEST
+#if AUTHKEY_6//IOS  TEST
+	u8 mac[6] = {0xdc,0x23,0x4d,0x26,0x5c,0xe6};
+	u8 authkey[17] = "jmF7Ju8J9AASqR9M";
+#endif
+#if AUTHKEY_7//IOS  TEST
+	u8 mac[6] = {0xdc,0x23,0x4d,0x26,0x5c,0xe7};
+	u8 authkey[17] = "jBDuUoCU3EUmrsXp";
+#endif
+#if AUTHKEY_12//IOS  TEST
 	u8 mac[6] = {0xdc,0x23,0x4d,0x26,0x5c,0xec};
 	u8 authkey[17] = "0A8vbTWPkxHYr0dE";
+#endif
+#if AUTHKEY_8//TEST
+	u8 mac[6] = {0xdc,0x23,0x4d,0x26,0x5c,0xe8};
+	u8 authkey[17] = "OaCTgth3DhP7Cql6";
+#endif
+#if AUTHKEY_9//TEST
+	u8 mac[6] = {0xdc,0x23,0x4d,0x26,0x5c,0xe9};
+	u8 authkey[17] = "PX1ATmHOCHYe0XAi";
+#endif
+#if AUTHKEY_10//yifeng
+	u8 mac[6] = {0xdc,0x23,0x4d,0x26,0x5c,0xea};
+	u8 authkey[17] = "UX9QZW5ZVqgtmbDx";
+#endif
+#if AUTHKEY_11//yifeng
+	u8 mac[6] = {0xdc,0x23,0x4d,0x26,0x5c,0xeb};
+	u8 authkey[17] = "NrGki6PGsygV10vH";
 #endif
 
 	print("authkey:");
@@ -121,12 +156,13 @@ void main(void)
 	print("\r\n");
 
 	
-	u8 pid[9] = "chltwaay";
+	u8 pid[9] = "chltwaay";//rc0ieijt";//"3tiavcvp";//"y0jtgfql";//"xniu6ibw";
 	u8 version = 0x11;//1.1
 	u16 kind = 0x0103;
 	
     app_light_init();
 	ty_beacon_init(mac,authkey,pid,version,kind);
+	btn_init();
 	
 	if(ty_beacon_get_state() == DEVICE_STATE_NOT_PAIRED)
 		ty_beacon_start_pairing();
