@@ -1,0 +1,10 @@
+{
+    "base_on":[
+       "./components/ty_beacon_remoter",
+       "./components/ty_xxtea",
+       "./components/ty_base64"
+    ],
+    "ide":{
+        "kind":"csky"
+    }
+}
