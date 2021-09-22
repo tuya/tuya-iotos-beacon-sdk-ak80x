@@ -1,0 +1,7 @@
+{
+    "base_on":[
+       "./components/ty_beacon",
+       "./components/ty_xxtea",
+       "./components/ty_base64"
+    ]
+}
