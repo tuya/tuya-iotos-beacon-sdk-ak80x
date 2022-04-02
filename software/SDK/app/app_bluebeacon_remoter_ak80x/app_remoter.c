@@ -12,11 +12,14 @@
 
 #pragma pack () 
 
-static u8 r_onoff = 0x00;
-static u8 r_group_id = 0;
-static u8 r_scene_id = 0;
+static u8 r_onoff_and_group_id = 0x00;    //hight 4 bit is onoff    low 4 bit is group id
+static u8 r_wifi_scene_id_and_beacon_scene_id = 0x00;    //hight 4 bit is wifi id    low 4 bit is beacon id
 static u8 r_timing_id = 0;
 static u8 r_color_id = 0;
+static u8 r_temp_value = 60;
+static u8 r_lum_value = 40;
+static u8 r_h_value = 0;
+static u8 r_h_dir_and_temp_dir = 0;   //bit 0 is temp_dir    bit 1 is h dir
 
 static u8 led_blink_times = 0;//指示灯闪烁次数
 
@@ -24,11 +27,14 @@ typedef struct
 {
 	//system used,1 words
 	u32 ret_upload_sn;
-	u8 ret_onoff;
-	u8 ret_group_id;
-	u8 ret_scene_id;
+	u8 ret_onoff_and_group_id;    //hight 4 bit is onoff    low 4 bit is group id
+	u8 ret_wifi_scene_id_and_beacon_scene_id;    //hight 4 bit is wifi id    low 4 bit is beacon id
 	u8 ret_timing_id;
 	u8 ret_color_id;
+	u8 ret_lum_value;
+	u8 ret_temp_value;
+	u8 ret_h_value;
+	u8 ret_h_dir_and_temp_dir;   //bit 0 is temp_dir    bit 1 is h dir
 }ty_retention_memory;
 ty_retention_memory ty_ret_mem_data;
 
@@ -42,7 +48,6 @@ void app_led_blink_times_set(u8 blink_times)
 {
 	led_blink_times = blink_times;//指示灯闪烁次数
 }
-
 
 
 void app_remoter_ram_restore(void)
@@ -65,6 +70,9 @@ void app_remoter_ram_restore(void)
 	else if(reg_value == WAKEUP_BY_FPO)
 	{
 		memset(p_retmem,0x0,RETENTION_MEMEORY_SIZE);
+		ty_ret_mem_data.ret_lum_value = 40;
+		ty_ret_mem_data.ret_temp_value = 60;
+		print("------device onoff:%d\r\n",ty_ret_mem_data.ret_lum_value);
 		print("RESET 1ST\n");
 	}
 
@@ -80,22 +88,28 @@ void app_remoter_ram_restore(void)
 #endif
     
 	ty_beacon_set_upload_sn(ty_ret_mem_data.ret_upload_sn);
-	r_onoff = ty_ret_mem_data.ret_onoff;
-	r_group_id = ty_ret_mem_data.ret_group_id;
-	r_scene_id = ty_ret_mem_data.ret_scene_id;
+	r_onoff_and_group_id = ty_ret_mem_data.ret_onoff_and_group_id;
+	r_wifi_scene_id_and_beacon_scene_id = ty_ret_mem_data.ret_wifi_scene_id_and_beacon_scene_id;
 	r_timing_id = ty_ret_mem_data.ret_timing_id;
 	r_color_id = ty_ret_mem_data.ret_color_id;
+	r_lum_value = ty_ret_mem_data.ret_lum_value;
+	r_temp_value = ty_ret_mem_data.ret_temp_value;
+	r_h_value = ty_ret_mem_data.ret_h_value;
+	r_h_dir_and_temp_dir = ty_ret_mem_data.ret_h_dir_and_temp_dir;
+	print("------device onoff:%d\r\n",r_lum_value);
 }
 
 void app_remoter_ram_save(void)
 {
 	ty_ret_mem_data.ret_upload_sn = ty_beacon_get_upload_sn();
-	ty_ret_mem_data.ret_onoff = r_onoff;
-	ty_ret_mem_data.ret_group_id = r_group_id;
-	ty_ret_mem_data.ret_scene_id = r_scene_id;
+	ty_ret_mem_data.ret_onoff_and_group_id = r_onoff_and_group_id;
+	ty_ret_mem_data.ret_wifi_scene_id_and_beacon_scene_id = r_wifi_scene_id_and_beacon_scene_id;
 	ty_ret_mem_data.ret_timing_id = r_timing_id;
 	ty_ret_mem_data.ret_color_id = r_color_id;
-	
+	ty_ret_mem_data.ret_lum_value = r_lum_value;
+	ty_ret_mem_data.ret_temp_value = r_temp_value;
+	ty_ret_mem_data.ret_h_value = r_h_value;
+	ty_ret_mem_data.ret_h_dir_and_temp_dir = r_h_dir_and_temp_dir;
 	uint32_t* p_retmem = (uint32_t*)&ty_ret_mem_data;
 
 	for(uint8_t i = 0; i < 3; i++)							//把休眠后需要保存的数据保存到Retation中
@@ -132,7 +146,7 @@ void app_remoter_ram_save(void)
 u8 cmd_onoff[7] = {0x00,0xff,0x04,0x00,0x00,0x00,0x00};
 u8 cmd_night_light[7] = {0x00,0x01,0x17,0x05,0x00,0x00,0x00};
 u8 cmd_timing[7] = {0x00,0xff,0x06,0x00,0x00,0x00,0x00};
-u8 cmd_lum_step[7] = {0x00,0x01,0x09,0x01,0x00,0x14,0x00};
+u8 cmd_lum_step[7] = {0x00,0x01,0x09,0x01,0x00,0x0A,0x00};
 u8 cmd_lum_stepless[7] = {0x00,0x01,0x0A,0x00,0x00,0x14,0x64};
 u8 cmd_temp_step[7] = {0x00,0x01,0x0B,0x01,0x14,0x00,0x00};
 u8 cmd_temp_stepless[7] = {0x00,0x01,0x0C,0x00,0x14,0x64,0x00};
@@ -144,34 +158,69 @@ u8 cmd_temp_step_cycle[7] = {0x00,0x01,0x0B,0x03,0x14,0x00,0x00};
 u8 cmd_temp_stepless_cycle[7] = {0x00,0x01,0x0C,0x03,0x14,0x00,0x00};
 u8 cmd_scene[7] = {0x00,0x01,0x15,0x01,0x00,0x00,0x00};
 
+u8 cmd_dp_onoff[10] = {0x00,0x01,0x00,0x04,0x00,0x00,0x00,0x00};           //group_id + dp_id_onoff
+u8 cmd_dp_timing[10] = {0x00,0x07,0x02,0x04,0x00,0x00,0x00,0x00};          //group_id + countdown_time
+u8 cmd_dp_lum_step[10] = {0x00,0x13,0x02,0x03,0x02,0x01,0x90,0x00};          //group_id + lightness
+u8 cmd_dp_temp_step[10] = {0x00,0x04,0x01,0x04,0x00,0x00,0x00,0x00};          //group_id + temp
+u8 cmd_dp_color[10] = {0x00,0x0b,0x02,0x04,0x00,0x00,0x00,0x00};              //group_id
+u8 cmd_dp_scene[10] = {0x00,0x0c,0x01,0x04,0x01,0x00,0x00,0x00};
+u8 scene_dpid_table[6] = {0x00,0x03,0x07,0x1C,0x18,0x04};               //beacon情景号对应表
+
 void app_remoter_single_click(kb_data_t* kb_data)
-{
+{	
     if(kb_data->cnt > 1)
         return;
     u8 cmd_type = DEVICE_CMD_TYPE_CTRL;
     u8 *params;
+    u8 *dp_params;
     u8 params_len = 7;
-
+    u8 dp_params_len = 10;
+	u16 r_lum_calue_value = 0;
+	u16 r_temp_calue_value = 0;
+	u16 r_h_calue_value = 0;
+	u8 r_onoff =0 ;
+	u8 r_scene_id = 0;
+	u8 r_dp_scene_id = 0;
+	u8 group_id = 0;
     cmd_type = DEVICE_CMD_TYPE_CTRL;
     
     switch(kb_data->keycode[0]){
         case 1:{
-                r_group_id = 0; 
+                //r_group_id = 0; 
+				r_onoff = r_onoff_and_group_id>>4;
+				//group_id = r_onoff_and_group_id&0x0f;
+				group_id = 0;
+				
                 params = &cmd_onoff[0];
-                *params = r_group_id;
+                *params = group_id;
                 *(params+3) = r_onoff;
-				print("------device onoff:%d\r\n",r_onoff);
+
+                dp_params = &cmd_dp_onoff[0];
+                //*dp_params = r_onoff_and_group_id&0x0f;
+				*dp_params = group_id;
+                *(dp_params+4) = r_onoff;
+
 				r_onoff++;
-                r_onoff = r_onoff%2;
+				r_onoff = r_onoff%2;
+				r_onoff =r_onoff<<4;
+				r_onoff_and_group_id = r_onoff + group_id;
                }
             break;
         case 2:
 				params = &cmd_night_light[0];
-				*params = r_group_id;
+				*params = r_onoff_and_group_id&0x0f;
+
+                r_dp_scene_id = 0;
+                dp_params = &cmd_dp_scene[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+                *(dp_params+4) = scene_dpid_table[r_dp_scene_id];
             break;
         case 3:{
                 params = &cmd_timing[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
+
+                dp_params = &cmd_dp_timing[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
                 u16 timing = 0;
                 if(0 == r_timing_id)
                 {
@@ -186,6 +235,9 @@ void app_remoter_single_click(kb_data_t* kb_data)
                 }
                 *(params+3) = (timing>>8)&0xFF;
                 *(params+4) = timing&0xFF;
+
+                *(dp_params+6) = (timing>>8)&0xFF;
+                *(dp_params+7) = timing&0xFF;
                 r_timing_id++; 
                 r_timing_id = r_timing_id%3;
 						
@@ -194,168 +246,388 @@ void app_remoter_single_click(kb_data_t* kb_data)
             break;
         case 4:{
                 params = &cmd_lum_step[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+3) = 0x01;
+				
+				dp_params = &cmd_dp_lum_step[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+
+				if(r_lum_value == 1)
+				{
+					r_lum_value = 10;
+				}
+				else{
+					if(r_lum_value!=100)
+					{
+						r_lum_value = r_lum_value+10;
+					}
+				}
+				
+				
+				r_lum_calue_value = r_lum_value*10;
+				
+                *(dp_params+5) = r_lum_calue_value>>8;
+                *(dp_params+6) = r_lum_calue_value;
 
 				print("------device lum up\r\n");
                }
             break;
         case 5:{
                 params = &cmd_lum_step[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+3) = 0x02;
+                
+                dp_params = &cmd_dp_lum_step[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+
+                if(r_lum_value>=20)
+                {
+                    r_lum_value = r_lum_value-10;
+                }
+                else{
+                    r_lum_value =1;
+                }
 				
+				r_lum_calue_value = r_lum_value*10;
+                *(dp_params+5) = r_lum_calue_value>>8;
+                *(dp_params+6) = r_lum_calue_value;
                 print("------device lum down\r\n");
                }
             break;
         case 6:{
                 params = &cmd_temp_step[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+3) = 0x01;
+
+                dp_params = &cmd_dp_temp_step[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+
+                if(r_temp_value!=100)
+                {
+                    r_temp_value = r_temp_value+20;
+                }
 				
+				r_temp_calue_value = r_temp_value*10;
+                *(dp_params+6) = r_temp_calue_value>>8;
+                *(dp_params+7) = r_temp_calue_value;
+
                 print("------device temperature up\r\n");
                }
             break;
         case 7:{
                 params = &cmd_temp_step[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+3) = 0x02;
+
+                dp_params = &cmd_dp_temp_step[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+
+                if(r_temp_value!=0)
+                {
+                    r_temp_value = r_temp_value-20;
+                }
+				r_temp_calue_value = r_temp_value*10;
+                *(dp_params+6) = r_temp_calue_value>>8;
+                *(dp_params+7) = r_temp_calue_value;				
 				
                 print("------device remperature down\r\n");
                }
             break;
         case 8:{
                 params = &cmd_fav[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
 				*(params+3) = 0x02;
                 *(params+4) = 0x00;
+				
+				dp_params = NULL;
                }
             break;
         case 9:{
                 params = &cmd_fav[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
 				*(params+3) = 0x02;
                 *(params+4) = 0x01;
+				
+				dp_params = NULL;
                }
             break;
         case 10:{
                 params = &cmd_fav[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
 				*(params+3) = 0x02;
                 *(params+4) = 0x02;
+				
+				dp_params = NULL;
                }
             break;
         case 11:{
                 params = &cmd_fav[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
 				*(params+3) = 0x02;
                 *(params+4) = 0x03;
+				
+				dp_params = NULL;
                }
             break;
         case 12:{
-                r_group_id = 1;
+				r_onoff = r_onoff_and_group_id>>4;
+				//group_id = r_onoff_and_group_id&0x0f;
+				group_id = 1;
+				
                 params = &cmd_onoff[0];
-                *params = r_group_id;
+                *params = group_id;
                 *(params+3) = r_onoff;
+
+                dp_params = &cmd_dp_onoff[0];
+                *dp_params = group_id;
+                *(dp_params+4) = r_onoff;
+
 				r_onoff++;
-                r_onoff = r_onoff%2;
+				r_onoff = r_onoff%2;
+				r_onoff =r_onoff<<4;
+				r_onoff_and_group_id = r_onoff + group_id;				
+				
                 }
             break;
         case 13:{
-                r_group_id = 2; 
+				r_onoff = r_onoff_and_group_id>>4;
+				//group_id = r_onoff_and_group_id&0x0f;
+				group_id = 2;
+				
                 params = &cmd_onoff[0];
-                *params = r_group_id;
+                *params = group_id;
                 *(params+3) = r_onoff;
+
+                dp_params = &cmd_dp_onoff[0];
+                *dp_params = group_id;
+                *(dp_params+4) = r_onoff;
+
 				r_onoff++;
-                r_onoff = r_onoff%2;    
+				r_onoff = r_onoff%2;
+				r_onoff =r_onoff<<4;
+				r_onoff_and_group_id = r_onoff + group_id;
+
                 }
             break;
         case 14:{
-                r_group_id = 3;
+				r_onoff = r_onoff_and_group_id>>4;
+				//group_id = r_onoff_and_group_id&0x0f;
+				group_id = 3;
+				
                 params = &cmd_onoff[0];
-                *params = r_group_id;
+                *params = group_id;
                 *(params+3) = r_onoff;
+
+                dp_params = &cmd_dp_onoff[0];
+                *dp_params = group_id;
+                *(dp_params+4) = r_onoff;
+
 				r_onoff++;
-                r_onoff = r_onoff%2;
+				r_onoff = r_onoff%2;
+				r_onoff =r_onoff<<4;
+				r_onoff_and_group_id = r_onoff + group_id;
                 }
             break;
         case 15:{
-                r_group_id = 4;
+				r_onoff = r_onoff_and_group_id>>4;
+				//group_id = r_onoff_and_group_id&0x0f;
+				group_id = 4;
+				
                 params = &cmd_onoff[0];
-                *params = r_group_id;
+                *params = group_id;
                 *(params+3) = r_onoff;
+
+                dp_params = &cmd_dp_onoff[0];
+                *dp_params = group_id;
+                *(dp_params+4) = r_onoff;
+
 				r_onoff++;
-                r_onoff = r_onoff%2;
+				r_onoff = r_onoff%2;
+				r_onoff =r_onoff<<4;
+				r_onoff_and_group_id = r_onoff + group_id;
                 }
             break;
         case 16:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
+
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
 				r_scene_id++;
                 r_scene_id = r_scene_id%8;
+
+                dp_params = &cmd_dp_scene[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+                *(dp_params+4) = scene_dpid_table[r_dp_scene_id];
+				r_dp_scene_id++;
+                r_dp_scene_id = r_dp_scene_id%6;
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
                 }
             break;
         case 17:{
 				params = &cmd_color[0];
-				*params = r_group_id;
+				*params = r_onoff_and_group_id&0x0f;
 				*(params+4) = r_color_id;
 				r_color_id++;
 				r_color_id = r_color_id%7;
+				
+                dp_params = &cmd_dp_color[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+				r_h_calue_value = r_h_value*10;			
+				*(dp_params+4) = r_h_calue_value>>8;
+				*(dp_params+5) = r_h_calue_value;
+				if((r_h_dir_and_temp_dir&0x02) == 0x00)
+				{
+					r_h_value = r_h_value+3;
+				}
+				else{
+					r_h_value = r_h_value-3;
+				}
+				if(r_h_value>=36)
+				{
+					r_h_dir_and_temp_dir |=0x02;
+				}
+				else if(r_h_value==0)
+				{
+					r_h_dir_and_temp_dir &=0x0d;
+				}				
 				}
             break;
         case 18:{
 				params = &cmd_temp_step_cycle[0];
-				*params = r_group_id;
+				*params =r_onoff_and_group_id&0x0f;
+				
+				dp_params = &cmd_dp_temp_step[0];
+				*dp_params = r_onoff_and_group_id&0x0f;
+				
+				if(r_temp_value>=100)
+				{
+					r_h_dir_and_temp_dir &=0x0e;
+				}
+				else if(r_temp_value==0)
+				{
+					r_h_dir_and_temp_dir |=0x01;
+				}				
+				
+				if((r_h_dir_and_temp_dir&0x01) == 1)
+				{
+					r_temp_value = r_temp_value+20;
+				}
+				else{
+					r_temp_value = r_temp_value-20;
+				}
+				
+				r_temp_calue_value = r_temp_value*10;
+				*(dp_params+6) = r_temp_calue_value>>8;
+				*(dp_params+7) = r_temp_calue_value;
 				}
             break;
         case 19:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
                 r_scene_id = 2;
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
+				
+				dp_params = NULL;
                 }
             break;
         case 20:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
                 r_scene_id = 6;
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
+
+                r_dp_scene_id = 3;
+                dp_params = &cmd_dp_scene[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+                *(dp_params+4) = scene_dpid_table[r_dp_scene_id];
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
                 }
             break;
         case 21:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
                 r_scene_id = 7;
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
+
+                r_dp_scene_id = 2;
+                dp_params = &cmd_dp_scene[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+                *(dp_params+4) = scene_dpid_table[r_dp_scene_id];
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
                 }
             break;
         case 22:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
                 r_scene_id = 1;
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
+				
+				dp_params = NULL;
                 }
             break;
         case 23:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
                 r_scene_id = 3;
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
+
+                r_dp_scene_id = 1;
+                dp_params = &cmd_dp_scene[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+                *(dp_params+4) = scene_dpid_table[r_dp_scene_id];
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
                 }
             break;
         case 24:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
                 r_scene_id = 4;
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
+
+                r_dp_scene_id = 4;
+                dp_params = &cmd_dp_scene[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+                *(dp_params+4) = scene_dpid_table[r_dp_scene_id];
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
                 }
             break;
         case 25:{
+				r_scene_id = r_wifi_scene_id_and_beacon_scene_id>>4;
+				r_dp_scene_id = r_wifi_scene_id_and_beacon_scene_id&0x0f;
                 r_scene_id = 5;
                 params = &cmd_scene[0];
-                *params = r_group_id;
+                *params = r_onoff_and_group_id&0x0f;
                 *(params+4) = r_scene_id;
+                                
+				r_dp_scene_id = 5;
+                dp_params = &cmd_dp_scene[0];
+                *dp_params = r_onoff_and_group_id&0x0f;
+                *(dp_params+4) = scene_dpid_table[r_dp_scene_id];
+				r_scene_id =r_scene_id<<4;
+				r_wifi_scene_id_and_beacon_scene_id = r_scene_id + r_dp_scene_id;
                 }
             break;
         default:
@@ -363,12 +635,17 @@ void app_remoter_single_click(kb_data_t* kb_data)
             break;
     }
 
-	print("ctrl------------------:");
-	for(u8 i=0;i<params_len;i++)
-		print("%x ",params[i]);
-	print("\r\n");
-	
-    ty_beacon_ctrl(cmd_type, params, params_len);
+    print("ctrl------------------:");
+
+    for(u8 i=0;i<dp_params_len;i++)
+        print("%x ",dp_params[i]);
+    print("\r\n");
+
+    for(u8 i=0;i<params_len;i++)
+        print("%x ",params[i]);
+    print("\r\n");
+    ty_beacon_ctrl(cmd_type, params, params_len,dp_params,dp_params_len);
+
 }
 
 void app_remoter_long_press_start(kb_data_t* kb_data)
@@ -376,6 +653,8 @@ void app_remoter_long_press_start(kb_data_t* kb_data)
     u8 cmd_type = DEVICE_CMD_TYPE_CTRL;
     u8 *params;
     u8 params_len = 7;
+	u8 *dp_params;
+    u8 dp_params_len = 10;
     u8 pair0[3] = {0x02,0x00,0xff};
     u8 pair1[3] = {0x02,0x01,0xff};
     u8 pair2[3] = {0x02,0x02,0xff};
@@ -386,11 +665,18 @@ void app_remoter_long_press_start(kb_data_t* kb_data)
                 switch(kb_data->keycode[0]){
 					case 3:{
 							params = &cmd_timing[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
+							
+							dp_params = &cmd_dp_timing[0];
+							*dp_params = r_onoff_and_group_id&0x0f;
+				
 							u16 timing = 0;
 							*(params+3) = (timing>>8)&0xFF;
 							*(params+4) = timing&0xFF;
 							
+							*(dp_params+6) = (timing>>8)&0xFF;
+							*(dp_params+7) = timing&0xFF;
+				
 							r_timing_id = 0;
 							led_blink_times = 5;//指示灯闪烁次数-1
 							print("------device countdown\r\n");
@@ -399,65 +685,89 @@ void app_remoter_long_press_start(kb_data_t* kb_data)
 					case 4:
 							{
 							params = &cmd_lum_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x00;
 							*(params+6) = 0x64;
+							
+							dp_params = NULL;
+							
 							print("------Brightness increase stepless adjustment\r\n");
 							}
                         break;
 					case 5:{
 							params = &cmd_lum_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x01;
 							*(params+6) = 0x01;
+							
+							dp_params = NULL;
+							
 							print("------Brightness decrease stepless adjustment\r\n");
 							}
                         break;
 					case 6:{
 							params = &cmd_temp_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x00;
 							*(params+5) = 0x64;
+							
+							dp_params = NULL;
+							
 							print("------Temperature increase stepless adjustment\r\n");
 							}
                         break;
 					case 7:{
 							params = &cmd_temp_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x01;
 							*(params+5) = 0x00;
+							
+							dp_params = NULL;
+							
 							print("------Temperature decrease stepless adjustment\r\n");
 							}
                         break;
 					case 8:{
 							params = &cmd_fav[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x01;
 							*(params+4) = 0x00;
+							
+							dp_params = NULL;
+							
 							led_blink_times = 3;//指示灯闪烁次数-1
 						   }
 						break;
 					case 9:{
 							params = &cmd_fav[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x01;
 							*(params+4) = 0x01;
+							
+							dp_params = NULL;
+							
 							led_blink_times = 3;//指示灯闪烁次数-1
 						   }
 						break;
 					case 10:{
 							params = &cmd_fav[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x01;
 							*(params+4) = 0x02;
+							
+							dp_params = NULL;
+							
 							led_blink_times = 3;//指示灯闪烁次数-1
 						   }
 						break;
 					case 11:{
 							params = &cmd_fav[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x01;
 							*(params+4) = 0x03;
+							
+							dp_params = NULL;
+							
 							led_blink_times = 3;//指示灯闪烁次数-1
 						   }
 						break;
@@ -495,15 +805,21 @@ void app_remoter_long_press_start(kb_data_t* kb_data)
                         break;
 					case 17:{
 							params = &cmd_hue_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x03;
+							
+							dp_params = NULL;
+							
 							print("------Hue stepless adjustment\r\n");
 							}
                         break;
 					case 18:{
 							params = &cmd_temp_stepless_cycle[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x03;
+							
+							dp_params = NULL;
+							
 							print("------Temperature cycle stepless adjustment\r\n");
 							}
                         break;
@@ -559,6 +875,7 @@ void app_remoter_long_press_start(kb_data_t* kb_data)
                 return;
             }
             break;
+
         default:
             return;
             break;
@@ -567,7 +884,7 @@ void app_remoter_long_press_start(kb_data_t* kb_data)
 	for(u8 i=0;i<params_len;i++)
 		print("%x ",params[i]);
 	print("\r\n");
-    ty_beacon_ctrl(cmd_type, params, params_len);
+	ty_beacon_ctrl(cmd_type, params, params_len,dp_params,dp_params_len);
 }
 
 void app_remoter_long_press_release(kb_data_t* kb_data)
@@ -580,7 +897,7 @@ void app_remoter_long_press_release(kb_data_t* kb_data)
                 switch(kb_data->keycode[0]){
                     case 4:{
 							params = &cmd_lum_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x02;
 							*(params+6) = 0x64;
 							print("------Brightness increase stepless adjustment\r\n");
@@ -588,7 +905,7 @@ void app_remoter_long_press_release(kb_data_t* kb_data)
                         break;
 					case 5:{
 							params = &cmd_lum_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x02;
 							*(params+6) = 0x01;
 							print("------Brightness decrease stepless adjustment\r\n");
@@ -596,7 +913,7 @@ void app_remoter_long_press_release(kb_data_t* kb_data)
                         break;
 					case 6:{
 							params = &cmd_temp_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x02;
 							*(params+5) = 0x64;
 							print("------Temperature increase stepless adjustment\r\n");
@@ -604,7 +921,7 @@ void app_remoter_long_press_release(kb_data_t* kb_data)
                         break;
 					case 7:{
 							params = &cmd_temp_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x02;
 							*(params+5) = 0x00;
 							print("------Temperature decrease stepless adjustment\r\n");
@@ -612,14 +929,14 @@ void app_remoter_long_press_release(kb_data_t* kb_data)
                         break;
 					case 17:{
 							params = &cmd_hue_stepless[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x02;
 							print("------Hue stepless adjustment\r\n");
 							}
                         break;
 					case 18:{
 							params = &cmd_temp_stepless_cycle[0];
-							*params = r_group_id;
+							*params = r_onoff_and_group_id&0x0f;
 							*(params+3) = 0x02;
 							print("------Temperature cycle stepless adjustment\r\n");
 							}
@@ -638,7 +955,7 @@ void app_remoter_long_press_release(kb_data_t* kb_data)
 	for(u8 i=0;i<params_len;i++)
 		print("%x ",params[i]);
 	print("\r\n");
-    ty_beacon_ctrl(cmd_type, params, params_len);
+    ty_beacon_ctrl(cmd_type, params, params_len,null,0);
 }
 
 
@@ -648,7 +965,7 @@ void ty_beacon_key_event(PressEvent key_state, kb_data_t* kb_data)
     print("key cnt=%d \r\n",kb_data->cnt);
     print("keycode:");
 	for(u8 i=0;i<5;i++)
-		print("%x ",kb_data->keycode[i]);
+	print("%x ",kb_data->keycode[i]);
 	print("\r\n");
 
     switch(key_state){
@@ -663,10 +980,9 @@ void ty_beacon_key_event(PressEvent key_state, kb_data_t* kb_data)
             app_remoter_long_press_start(kb_data);
             break;
         case LONG_PRESS_RELEASE:
-            app_remoter_long_press_release(kb_data);
+			app_remoter_long_press_release(kb_data);
             break;
         default:
             break;
     }
 }
-

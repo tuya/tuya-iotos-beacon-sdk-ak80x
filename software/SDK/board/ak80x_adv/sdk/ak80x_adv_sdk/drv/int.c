@@ -63,8 +63,6 @@ void int_enable_irq(uint32_t irq_bit)
 
 void int_disable_irq(uint32_t irq_bit)
 {
-    uint32_t reg_val = 0;
-
     /* Clear all int status */
     write_reg(INT_VIC_IABR_REG, 0);
 

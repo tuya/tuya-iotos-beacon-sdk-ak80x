@@ -20,11 +20,11 @@ u8 key_press_flag = 0;
 //long press time 3000ms
 //double press time max interval 300ms
 
-#define KEY_LONG_PRESS_TIME 3000
+#define KEY_LONG_PRESS_TIME 1500
 #define KEY_PRESS_INTERVAL_TIME  300
 
 const u32 RowArray[5] = {BIT3,BIT14,BIT15,BIT4,BIT5};
-const u32 LineArray[5] = {BIT19,BIT7,BIT8,BIT6,BIT0};
+const u32 LineArray[5] = {BIT19,BIT2,BIT8,BIT6,BIT0};
 
 #define KEY_ROW_NUM           5   
 #define KEY_LINE_NUM          5   

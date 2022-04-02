@@ -85,7 +85,7 @@ void lvd_threshold_set(lvd_threshold_t lvd_thr)
 }
 void lvd_init()
 {
-	lvd_powerup_enable();
+//	lvd_powerup_enable();
 	int_enable_irq(INT_LV_L_EN_MASK);
 	lvd_module_select();
 	int_type_cfg(INT_LV_L_EN_MASK);

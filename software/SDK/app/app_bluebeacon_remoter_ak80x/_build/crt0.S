@@ -220,6 +220,10 @@ delay_us_loop:
 	bt      	jg_loop1
 	br      	ak801m_pro
 jg_loop1:
+	movi            r2,0xAA
+	cmpne      	r0, r2
+	bf              ak801h_pro
+	movi            r2,0x55
 	ld.w      	r1, (r1, 0xc)
 	cmpnei      	r1, 0x1c
 	bt      	jg_loop2

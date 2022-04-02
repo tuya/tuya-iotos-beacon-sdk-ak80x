@@ -21,45 +21,30 @@
 
 /* Macro --------------------------------------------------------*/
 
-//
-//  Platform selection
-//
-#define FPGA_801        (0)
-#define ASIC_801        (1)
-#define ASIC_801_M      (11)
+/**
+ * @brief  Version of the current SDK.
+ */
+#define SDK_VERSION     (0x00020013)    //V2.0.13
+#define SDK_DATE        (0x20220120)    //2022.01.0
 
-#define FPGA_802        (2)
-#define ASIC_802        (3)
+/**
+ * @brief  Enable the function of 'print'.
+ */
+//  #define DEBUG
 
-#define PLATFORM        ASIC_801
+/**
+ * @brief  The test cases of SDK.
+ */
+//  #define MODULE_TEST
 
-//
-//  SOFT_VERSION
-//
-#define SDK_VERSION     (0x00020004)//V2.0.4
-
-
-//
-//  Module config
-//
-#if ( PLATFORM == FPGA_802 ) | ( PLATFORM == ASIC_802 )
-#define UART_CHERRY
-#endif
-
-//#define SOP16
-
-//#define DEBUG
-
-
-
-#define MODULE_TEST
+/**
+ * @brief  Enable the function of 'JTAG'.
+ */
 //#define     ENABLE_JTAG
 
-
 #ifdef  ENABLE_JTAG
-#define ENABLE_JTAG_ON_GPIO9_11         // GPIO9.10.11 as jtag
-//#define ENABLE_JTAG_ON_GPIO4_6          // GPIO4.5.6 as jtag
+#define ENABLE_JTAG_ON_GPIO9_11             // GPIO 9.10.11 as jtag
+//#define ENABLE_JTAG_ON_GPIO4_6            // GPIO 4.5.6 as jtag
 #endif
-
 
 #endif  // #ifndef   __CONFIG_H_

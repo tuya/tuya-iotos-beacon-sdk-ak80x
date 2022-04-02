@@ -29,11 +29,19 @@ typedef enum{
 	DEVICE_STATE_REP_GET_PROVING_OK	
 }state_machine_e;
 
+typedef enum{
+    INTERNET_DEVICE_CONTROLLED = 0x00,
+    NO_INTERNET_DEVICE_CONTROLLED,
+}type_device_e;
+
 #define BEACON_DP_ID            11
 #define BEACON_DP_TYPE_DP_LEN   0x07
 
 #define BEACON_DP_CMD_PAIR      0x02
 #define BEACON_DP_CMD_UNPAIR    0x03
+
+#define BEACON_LIGHT_DP_CMD_PAIR      0x03
+#define BEACON_LIGHT_DP_CMD_UNPAIR    0x04
 typedef enum{
 	DEVICE_CMD_TYPE_CTRL = 0x00,
     DEVICE_CMD_TYPE_PROV,
@@ -55,6 +63,16 @@ typedef struct{
     beacon_dp_data_s dp_data;
 }beacon_dp_s;
 
+typedef struct{
+    u8 mac_group_id;
+    u8 cmd;
+    u8 kind_id;
+    u8 group_id;
+    u8 srand[2];
+    u8 rfue[4];
+}beacon_light_dp_s;
+
+
 //mac 6 bytes
 //pid 8 bytes
 //authkey 16 bytes (authkey[0~16],authkey total 32 bytes)
@@ -62,7 +80,7 @@ typedef struct{
 //kind(same as sig mesh, big end)
 u8 ty_beacon_init(u8 *pmac, u8 *pauthkey, u8 *ppid, u8 version, u16 kind);
 u8 ty_beacon_receive(u8 *rx_buf, u8 len_pdu, u8 rssi);
-u8 ty_beacon_send(u32 cycle, u8 send_times, u8 cmd, u8* params, u8 params_len, u8 tp);
+u8 ty_beacon_send(u32 cycle, u8 send_nums, u8 cmd, u8* params, u8 params_len,u8 dp_cmd,u8* dp_params, u8* dp_params_len, u8 tp);
 u8 ty_beacon_start_pairing(void);
 state_machine_e ty_beacon_get_state(void);
 
@@ -74,7 +92,7 @@ u8 ty_beacon_run(void);
 
 u8 ty_beacon_pair_init(void);
 
-void ty_beacon_ctrl(cmd_type_e cmd_type, u8* params, u8 params_len);
+void ty_beacon_ctrl(cmd_type_e cmd_type, u8* params, u8 params_len,u8* dp_params, u8 dp_params_len);
 
 void __attribute__((weak)) ty_beacon_enter_test_mode_cb(u8 rssi);
 

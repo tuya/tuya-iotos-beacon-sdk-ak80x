@@ -34,10 +34,10 @@ typedef struct{
 
 #pragma pack () 
 
-#define TY_LED	BIT2
+#define TY_LED	BIT7
 
 #define TY_WAKEUP_IO (BIT3|BIT14|BIT15|BIT4|BIT5)
-#define TY_TRIGER_IO (BIT19|BIT7|BIT8|BIT6|BIT0)
+#define TY_TRIGER_IO (BIT19|BIT2|BIT8|BIT6|BIT0)
 //#define UNUSED_IO	(~(TY_WAKEUP_IO|TY_LED))
 #define UNUSED_IO	(~(TY_WAKEUP_IO))
 

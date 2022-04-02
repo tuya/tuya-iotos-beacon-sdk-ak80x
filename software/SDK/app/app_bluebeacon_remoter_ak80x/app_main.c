@@ -79,6 +79,13 @@ void main(void)
     lvd_threshold_set(LVD_THR_2);
 #endif
 
+#if (LOW_BATTERY_REMINDER)
+    lvd_init();
+	lvd_powerup_disable();
+    lvd_threshold_set(LVD_THR_1);//2.3V
+#endif
+	
+	
 	//init core timer
 	core_timer_init(CLOCK_SYS_CLOCK_HZ);//interrupt frequency:1000ms
 	core_timer_set_int(ON);//enable core timer int
@@ -89,18 +96,21 @@ void main(void)
 #endif
 	//init rf
 #if(PLATFORM == FPGA_801)
-	rf_bb_mode_config();
+//	rf_bb_mode_config();
 #endif
 	rf_init();
     rf_set_bbram_mode(BBRAM_FIFO_TXRX);
+//	rf_set_bbram_mode(BBRAM_FIFO_TX);
 	rf_set_whit_and_crc(ON,ON);
 
     //mcu int of bb
-    int_enable_irq(INT_RX_EN_MASK);
-	int_set_priority(IRQN_RX,IRQ_PRI_1);//modified by flege,20200603
+//    int_enable_irq(INT_RX_EN_MASK);
+//	int_set_priority(IRQN_RX,IRQ_PRI_1);//modified by flege,20200603
 
     //rf start
-    rf_set_rx_tx_mode(RF_RX_MODE);
+//    rf_set_rx_tx_mode(RF_RX_MODE);
+	rf_set_rx_tx_mode(RF_TX_MODE);
+	rf_set_power(3);
     rf_soft_reset();
     rf_start();
 	
@@ -108,21 +118,24 @@ void main(void)
 	print("tuya test!\n");
 #endif
 
-#ifndef DEBUG
+//#ifndef DEBUG
 	#define AUTHKEY_X 1
-#else
-	#define AUTHKEY_1 1
-#endif
+//#else
+	//#define AUTHKEY_1 1
+//#endif
 	
 #if AUTHKEY_X//EEPROM
 	u8 * authkey = 0x3FC4;
 	u8 * mac = 0x3FE4;
 #endif
 #if AUTHKEY_1//IOS  TEST
-	u8 mac[6] = {0xdc,0x23,0x4d,0x3C,0xCF,0x7A};
-	u8 authkey[17] = "h2Mu1AkfNAwhg5Su";
+	//u8 mac[6] = {0xdc,0x23,0x4d,0x3C,0xCF,0x7A};
+	//u8 authkey[17] = "h2Mu1AkfNAwhg5Su";
+	
+	u8 mac[6] = {0xDC,0x23,0x4D,0xD0,0x23,0xF3};
+	u8 authkey[17] = "JBRa8EOkaAoFyvgdiPvDyDDc8cNfjCO4";
 #endif
-
+#if 0
 	print("authkey:");
 	for(u8 i=0;i<16;i++)
 		print("%c",authkey[i]);
@@ -132,13 +145,16 @@ void main(void)
 	for(u8 i=0;i<6;i++)
 		print("%x ",mac[i]);
 	print("\r\n");
-
+#endif
 	
 	//u8 pid[9] = "key55wy8";
 	//u8 pid[9] = "ykuagamo";
 	u8 pid[9] = "        ";
-	u8 version = 0x13;//1.3
+	u8 version = 0x10;//1.0
 	u16 kind = 0x1054;
+	app_matrix_key_init();
+	app_matrix_key_run();
+    delay_ms(30);
 	
 	ty_beacon_init(mac,authkey,pid,version,kind);
 
@@ -146,14 +162,12 @@ void main(void)
     
 //	int_init();                     //中断初始化函数
 
-    app_matrix_key_init();
-    
-    delay_ms(50);
-	
+    //app_matrix_key_init();
+    delay_ms(10);	
 	app_remoter_ram_restore();
 	
 	u8 ty_sleep_time = 0;
-	u8 led_state = 1;
+	u8 led_state = 0;
 	u32 T_time = 0;
 	u8 led_off = 1;//1 off;0 on
     while(1)
@@ -171,27 +185,11 @@ void main(void)
 			if(NONE_PRESS == key_state)
 			{
 				led_off = 1;//1 stop
-//				u8 led_blink_times_temp = app_led_blink_times_get();
-//
-//				if(led_blink_times_temp > 0){
-//					if(hal_clock_time_exceed(T_time,500)){
-//						T_time = hal_clock_get_system_tick();
-//						
-//						led_state = led_state == 0?1:0;
-//						gpio_set_bit(TY_LED, led_state);
-//						
-//						if(led_state == 0){
-//							led_blink_times_temp--;
-//							app_led_blink_times_set(led_blink_times_temp);
-//						}
-//						
-//					}					
-//				}else{
-					ty_sleep_time++;
-//				}
+
+				ty_sleep_time++;
 				
 				
-				if(ty_sleep_time>60)
+				if(ty_sleep_time>35)
 				{
 					gpio_set_bit(TY_LED, 0);
 					print("system sleep!\r\n");

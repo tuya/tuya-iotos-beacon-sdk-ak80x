@@ -158,6 +158,8 @@ uint8_t iic_write_bytes(uint16_t sub_addr,uint8_t* bytes,uint8_t length)
 {
 	uint8_t ret = 0x0;
 
+    GLOBAL_INT_DISABLE();
+
 	//1.start 
 	iic_start();
 	
@@ -191,14 +193,18 @@ uint8_t iic_write_bytes(uint16_t sub_addr,uint8_t* bytes,uint8_t length)
 iic_operation_end_label:
 	
 	iic_stop();
-	
+
+    GLOBAL_INT_RESTORE();
+
 	return ret;
 }
 
 uint8_t iic_read_bytes(uint16_t sub_addr,uint8_t* bytes,uint8_t length)
 {
 	uint8_t ret = 0x0;
-	
+
+    GLOBAL_INT_DISABLE();
+
 	//DUMMY WRITE
 	iic_start();
 	
@@ -242,8 +248,10 @@ uint8_t iic_read_bytes(uint16_t sub_addr,uint8_t* bytes,uint8_t length)
 iic_operation_end_label:
 
 	iic_stop();
-	
-	return ret;
+
+    GLOBAL_INT_RESTORE();
+
+    return ret;
 }
 
 void iic_soft_reset()

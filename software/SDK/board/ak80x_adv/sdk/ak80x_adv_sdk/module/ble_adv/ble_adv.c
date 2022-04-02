@@ -21,7 +21,7 @@ str_adv_fifo 		adv_fifo[ADV_FIFO_MAX_NUM];
 
 volatile uint32_t 	send_adv_timer_count = 0x0;
 
-
+uint8_t channel_idx=37;
 void ble_adv_start()
 {
 	/*[EFFICIENCY]disable uart log,send 2 advs spend 2.14ms,send 1 adv spend 1.08ms,test at 20200412*/
@@ -59,69 +59,71 @@ send_adv_label:
 	rf_set_tx_preamble(BB_TX_PRE_MODE_1_BYTE,0xAA);
 	rf_set_tx_aa(BB_TX_AA_MODE_4_BYTE,0x00,0x8E89BED6);
 	rf_set_rx_tx_mode(RF_TX_MODE);
-	rf_set_channel_num(tx_channel+tx_channel_offset);//by huangjun alter 2020/11/05
-
-	for(i = 0; i < ADV_FIFO_MAX_NUM; i++)
-	{
-		//check left count and send moment
-		//[CAUTION] need check interval, if interval is 0,sys crash,A%B(B != 0)
-		if((!adv_fifo[i].tx_left_count) || ((adv_fifo[i].interval) && (send_adv_timer_count % (adv_fifo[i].interval) != 0x0)))
-		{
-			continue;
-		}
-
-		//update left count
-		adv_fifo[i].tx_left_count--;
-
-		//update tx length
-		rf_set_tx_len(adv_fifo[i].adv_payload_len);
-
-		//update tx buffer
-		memcpy_byte(send_buff,&adv_fifo[i].adv_payload,adv_fifo[i].adv_payload_len);
-#if LOG_DETAIL
-		//print("[%d]LEN:%d,HWBUFFER:",i,adv_fifo[i].adv_payload_len);
-		for(uint8_t j = 0; j < adv_fifo[i].adv_payload_len; j++)
-		{
-			print("%x ",send_buff[j]);
-		}
-		print("\n");
-#endif
-
-		rf_soft_reset();
-		rf_write_finish();
-		rf_start();
+	
+//	for(int tx_idx=0;tx_idx<3;tx_idx++)
+//	{
+//		rf_set_channel_num(channel_idx+tx_idx);
+		rf_set_channel_num(tx_channel+tx_channel_offset);//by huangjun alter 2020/11/05
+		write_reg(CORE_CTRL_BASE_ADDR,0X0F);
+		delay_us(500);
+		write_reg(CORE_CTRL_BASE_ADDR, 0X01);
 		
-		//by huangjun alter 2020/11/05
+		for(i = 0; i < ADV_FIFO_MAX_NUM; i++)
+		{
+			//check left count and send moment
+			//[CAUTION] need check interval, if interval is 0,sys crash,A%B(B != 0)
+			if((!adv_fifo[i].tx_left_count) || ((adv_fifo[i].interval) && (send_adv_timer_count % (adv_fifo[i].interval) != 0x0)))
+			{
+				continue;
+			}
+
+			//update left count
+			adv_fifo[i].tx_left_count--;
+
+			//update tx length
+			rf_set_tx_len(adv_fifo[i].adv_payload_len);
+
+			//update tx buffer
+			memcpy_byte(send_buff,&adv_fifo[i].adv_payload,adv_fifo[i].adv_payload_len);
 #if LOG_DETAIL
-		//print("%d channel adv start:%d\r\n",tx_channel_offset+37,hal_clock_get_system_tick());
+			//print("[%d]LEN:%d,HWBUFFER:",i,adv_fifo[i].adv_payload_len);
+			for(uint8_t j = 0; j < adv_fifo[i].adv_payload_len; j++)
+			{
+				print("%x ",send_buff[j]);
+			}
+			print("\n");
 #endif
-		//print("%d channel adv start:%d\r\n",tx_channel_offset+37,hal_clock_get_system_tick());
-		tx_channel_offset+=1;
-		if(tx_channel_offset >= 0x03)
-		{
-			tx_channel_offset=0x00;
-		}
-			
-#if(RF_CHECK_TX_DONE_TYPE == RF_CHECK_TX_DONE_BY_INQUIRY)
-		delay_ms(1);
 
-		//check rf send done?
-		if(0 == (BB_CTRL2REG_TX_RAW_INT_STATE_MASK&rf_get_int_status()))
-		{
+			rf_soft_reset();
+			rf_write_finish();
+			rf_start();
+
+			tx_channel_offset+=1;
+			if(tx_channel_offset >= 0x03)
+			{
+				tx_channel_offset=0x00;
+			}			
+#if(RF_CHECK_TX_DONE_TYPE == RF_CHECK_TX_DONE_BY_INQUIRY)
+			delay_ms(1);
+
+			//check rf send done?
+			if(0 == (BB_CTRL2REG_TX_RAW_INT_STATE_MASK&rf_get_int_status()))
+			{
 #if LOG_WARN
-			print("tx undone\n");
+				print("tx undone\n");
+#endif
+			}
 #endif
 		}
-#endif
-	}
+//	}
 
-
+	
 #if(RF_CHECK_TX_DONE_TYPE == RF_CHECK_TX_DONE_BY_INQUIRY)
-	//rf config as rx mode
-	rf_set_rx_tx_mode(RF_RX_MODE);
-    rf_set_rx_sync_words(BB_CHANNEL_0,0x8E,0x89BED6AA);
-    rf_soft_reset();
-    rf_start();
+//	//rf config as rx mode
+//	rf_set_rx_tx_mode(RF_RX_MODE);
+//    rf_set_rx_sync_words(BB_CHANNEL_0,0x8E,0x89BED6AA);
+//    rf_soft_reset();
+//    rf_start();
 #endif
 
 #if LOG_SECONDARY

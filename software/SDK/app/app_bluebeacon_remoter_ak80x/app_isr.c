@@ -18,6 +18,7 @@
 #include "lvd.h"
 #include "gpio.h"
 #include "app_matrix_key.h"
+#include "app_remoter.h"
 
 volatile uint32_t core_timer_count_ms = 0x0;
 uint8_t rx_channel_offset=0;
@@ -91,15 +92,15 @@ ATTRIBUTE_ISR void tx_isr()
 	print("tx done\n");
 #endif
 
-	//send complete,switch rf to rx
-    rf_mask_int(BB_INT_TX_MASK_MASK);
-
-	//RF config as RX mode	
-	rf_set_rx_tx_mode(RF_RX_MODE);
-	rf_set_bbram_mode(BBRAM_FIFO_TXRX);
-    rf_set_rx_sync_words( BB_CHANNEL_0, 0x8E, 0x89BED6AA );
-    rf_soft_reset();
-    rf_start();
+//	//send complete,switch rf to rx
+//    rf_mask_int(BB_INT_TX_MASK_MASK);
+//
+//	//RF config as RX mode	
+//	rf_set_rx_tx_mode(RF_RX_MODE);
+//	rf_set_bbram_mode(BBRAM_FIFO_TXRX);
+//    rf_set_rx_sync_words( BB_CHANNEL_0, 0x8E, 0x89BED6AA );
+//    rf_soft_reset();
+//    rf_start();
 #endif
 }
 

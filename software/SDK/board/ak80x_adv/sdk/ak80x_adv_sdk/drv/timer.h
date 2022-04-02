@@ -101,7 +101,7 @@
 #define TIMER_INPUT_MASK_DISABLE     		(0x00)
 
 
-#define TIMEOUT     						(0x320)//0x3E80 //1ms //640//100us//0xA0//10us
+#define TIMEOUT     						(20000)//160
 #define TIME0OUT     						(0xAAAA)
 #define TIME1OUT     						(0xCCCC)
 #define TIME2OUT     						(0xFFFF)
@@ -112,17 +112,18 @@ enum timer_e
     TIMER1,
     TIMER2
 };
- enum timer_clock_e
+
+enum timer_clock_e
 {
     TIMER_CLOCK_16M     = 0,
     TIMER_CLOCK_8M      = 1,
     TIMER_CLOCK_4M      = 2,
     TIMER_CLOCK_2M      = 3
 };
-void timer0_init(uint8_t clk_sel,uint32_t timer_load_count);
-void timer1_init(uint8_t clk_sel,uint32_t timer_load_count);
-void timer2_init(uint8_t clk_sel,uint32_t timer_load_count);
-void core_timer_init(uint32_t timer_load_count);
+void timer0_init(uint8_t clk_sel,uint16_t timer_load_count);
+void timer1_init(uint8_t clk_sel,uint16_t timer_load_count);
+void timer2_init(uint8_t clk_sel,uint16_t timer_load_count);
+void core_timer_init(uint32_t timer_load_count);    //24bits
 void core_timer_set_int(BOOL on_off);
 void core_timer_enable();
 void core_timer_disable();

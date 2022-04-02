@@ -57,4 +57,7 @@
 
 #define GROUP_INDEX_MAX							(3)
 
+#define LOW_BATTERY_REMINDER                    DISABLE
+
+
 #endif

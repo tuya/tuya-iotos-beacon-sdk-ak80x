@@ -52,7 +52,10 @@ void pwm_init()
     write_reg( TOP_CLK_CTRL_REG, reg_val );
     if(chip_verson_check())
     {
-        write_reg(TOP_CTRL_BASE_ADDR+0x08,0x1);//timer clk set to 16MHz
+        reg_val = read_reg(0x40120108);
+        reg_val &= 0xFFFFFFFC;
+        reg_val |= 0x1;
+        write_reg(0x40120108, reg_val);
     }
 
 }

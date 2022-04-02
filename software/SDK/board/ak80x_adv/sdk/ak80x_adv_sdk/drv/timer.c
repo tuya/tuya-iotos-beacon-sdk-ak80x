@@ -105,7 +105,7 @@ void timer_clk_config(uint8_t timer, uint8_t clk_sel)
 
 #endif
 
-void timer0_init(uint8_t clk_sel,uint32_t timer_load_count)
+void timer0_init(uint8_t clk_sel,uint16_t timer_load_count)
 {
     uint32_t reg_val =timer_load_count;
 	timer_clk_config(TIMER0, clk_sel);
@@ -131,7 +131,7 @@ void timer0_init(uint8_t clk_sel,uint32_t timer_load_count)
     int_enable_irq(INT_TIM0_EN_MASK);
 }
 
-void timer1_init(uint8_t clk_sel,uint32_t timer_load_count)
+void timer1_init(uint8_t clk_sel,uint16_t timer_load_count)
 {
     uint32_t reg_val =timer_load_count;
 	timer_clk_config(TIMER1, clk_sel);
@@ -156,7 +156,7 @@ void timer1_init(uint8_t clk_sel,uint32_t timer_load_count)
     read_reg(TIMER1_EOI);//clear int
     int_enable_irq(INT_TIM1_EN_MASK);
 }
-void timer2_init(uint8_t clk_sel,uint32_t timer_load_count)
+void timer2_init(uint8_t clk_sel,uint16_t timer_load_count)
 {
     uint32_t reg_val =timer_load_count;
 	timer_clk_config(TIMER2, clk_sel);
@@ -183,6 +183,7 @@ void timer2_init(uint8_t clk_sel,uint32_t timer_load_count)
 
 }
 
+//24bits timer_load_count
 void core_timer_init(uint32_t timer_load_count)
 {
     write_reg(CORE_TIMER_CORET_RVR_REG, timer_load_count);

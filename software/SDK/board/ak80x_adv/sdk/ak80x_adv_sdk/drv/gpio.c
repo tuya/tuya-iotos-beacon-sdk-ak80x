@@ -56,6 +56,33 @@ void gpio_set_bit_direction( uint32_t bit, gpio_dir_t direction)
     }
 
     write_reg(GPIO_SWPORT_A_DDR, reg);
+
+    /* GPIO_0 and GPIO_1 need config top_ctrl_reg */
+    if(bit & BIT0)
+    {
+        reg = read_reg(TOP_CTRL_BASE_ADDR);
+        reg &= 0xFFFFFF9F;  //clear BIT[6:5]
+        
+        if(GPIO_OUTPUT == direction)
+            reg |= 0x60; //BIT[6:5] config 0x11
+        else
+            reg |= 0x40; //BIT[6:5] config 0x10
+        
+        write_reg(TOP_CTRL_BASE_ADDR, reg);
+    }
+    
+    if(bit & BIT1)
+    {
+        reg = read_reg(TOP_CTRL_BASE_ADDR);
+        reg &= 0xFFFFFFE7;  //clear BIT[4:3]
+        
+        if(GPIO_OUTPUT == direction)
+            reg |= 0x18; //BIT[4:3] config 0x11
+        else
+            reg |= 0x10; //BIT[4:3] config 0x10
+        
+        write_reg(TOP_CTRL_BASE_ADDR, reg);
+    }
 }
 
 void gpio_set_port( uint32_t data)

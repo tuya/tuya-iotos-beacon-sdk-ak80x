@@ -3,19 +3,19 @@
   <Description/>
   <Dependencies Name="Debug"/>
   <VirtualDirectory Name="App">
-    <File Name="../app_matrix_key.c">
-      <FileOption/>
-    </File>
     <File Name="../app_isr.c">
-      <FileOption/>
-    </File>
-    <File Name="../_build/chip_name.c">
       <FileOption/>
     </File>
     <File Name="../app_main.c">
       <FileOption/>
     </File>
+    <File Name="../app_matrix_key.c">
+      <FileOption/>
+    </File>
     <File Name="../app_remoter.c">
+      <FileOption/>
+    </File>
+    <File Name="../_build/chip_name.c">
       <FileOption/>
     </File>
   </VirtualDirectory>
@@ -212,8 +212,8 @@
     <debugLayout/>
     <memoryTabColSizeExpressions>100:8;100:8;100:8;100:8;</memoryTabColSizeExpressions>
   </DebugSessions>
-  <VirtualDirectory Name="Libs">
-    <File Name="../../../sdk/lib/libtuya_beacon_renoter_sdk_v1.0.a">
+  <VirtualDirectory Name="lib">
+    <File Name="lib/libtuya_beacon_remoter_sdk_v2.0.a">
       <FileOption/>
     </File>
   </VirtualDirectory>
@@ -316,7 +316,7 @@
         <Undefine/>
         <Optim>Optimize size (-Os)</Optim>
         <DebugLevel>Maximum (-g3)</DebugLevel>
-        <IncludePath>$(CDKPath)/CSKY/csi/csi_core/csi_cdk/;$(CDKPath)/CSKY/csi/csi_core/include/;$(CDKPath)/CSKY/csi/csi_driver/include/;$(ProjectPath);$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/hal/hal_gpio;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/hal/iic;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/drv;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_adv;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_encoder/ble_viot;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_pack;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_unpack;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec/codec_433;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec/codec_uart;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec/codec_v8t04a;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/e2prom;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/rcscan;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/seelp_process;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/timer_mgt;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/ty_beacon_sdk/Comp;$(ProjectPath)/../../../board/ak80x_adv/hal;$(ProjectPath)/../../../board/ak80x_adv/bal;$(ProjectPath)/../../../board/ak80x_adv;$(ProjectPath)/../../../components/ty_base64;$(ProjectPath)/../../../components/ty_beacon;$(ProjectPath)/../../../components/ty_xxtea;$(ProjectPath)/..;$(ProjectPath)/../_build;$(ProjectPath)/../../../sdk/include;$(ProjectPath)/..;$(ProjectPath)/../_build</IncludePath>
+        <IncludePath>$(CDKPath)/CSKY/csi/csi_core/csi_cdk/;$(CDKPath)/CSKY/csi/csi_core/include/;$(CDKPath)/CSKY/csi/csi_driver/include/;$(ProjectPath);$(ProjectPath)/..;$(ProjectPath)/../../../board/ak80x_adv;$(ProjectPath)/../../../board/ak80x_adv/bal;$(ProjectPath)/../../../board/ak80x_adv/hal;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/drv;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/hal/hal_gpio;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/hal/iic;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_adv;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_encoder/ble_viot;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_pack;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/ble_unpack;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec/codec_433;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec/codec_uart;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/codec/codec_v8t04a;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/e2prom;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/rcscan;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/seelp_process;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/module/timer_mgt;$(ProjectPath)/../../../board/ak80x_adv/sdk/ak80x_adv_sdk/ty_beacon_sdk/Comp;$(ProjectPath)/../../../components/ty_base64;$(ProjectPath)/../../../components/ty_beacon;$(ProjectPath)/../../../components/ty_beacon_remoter;$(ProjectPath)/../../../components/ty_xxtea;$(ProjectPath)/../_build;$(ProjectPath)/../../../sdk/include</IncludePath>
         <OtherFlags>-ffunction-sections -fdata-sections -flto</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>

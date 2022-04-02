@@ -21,7 +21,7 @@
 
 #ifdef   DEBUG
 
-//#include <stdio.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include "uart.h"
 
@@ -109,8 +109,6 @@ void printNum(unsigned long num, int base)
 
 void printDeci(int dec)
 {
-    int num;
-
 	if (dec < 0)
     {
         putchar('-');
@@ -228,8 +226,6 @@ int scanf(const char *fmt,...)
 #else
     while(1)
     {
-        //c = recv_char();
-        //send_char(c);
         c = uart_getc();
         uart_putc(c);
         if((c == 0x0d) || (c == 0x0a))
@@ -246,12 +242,17 @@ int scanf(const char *fmt,...)
     i = vsscanf(buffer,fmt,args);
     va_end(args);
 
-    //send_char('r');
-    //send_char('n');
     uart_putc('\r');
     uart_putc('\n');
 
     return i;
+}
+
+#else
+
+void myPrintf(char *s, ...)
+{
+    
 }
 
 #endif	//#ifdef	DEBUG

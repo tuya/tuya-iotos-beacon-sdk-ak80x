@@ -101,15 +101,11 @@ void sys_set_clock( cpu_clock_sel_t clock )
 
 void sys_init()
 {
-	/*bug fixed:sleep can't wakeup,modified by flege,20200526*/
-	write_reg(0x40120134,				0xD8);		//before is 0xD8//0xC8//0x48
+	write_reg(0x40120134,				0xD8);		
 
-	write_reg(TOP_VDD_VCO_REG_0,        0x12);      // YanLei_Add:20200327.
+	write_reg(TOP_VDD_VCO_REG_0,        0x12);      
     write_reg(TOP_VDD_VCO_REG_1,        0x37);      // For PLL drift while high temperature.
-    write_reg(TOP_CTRL_ADC_DELAY_REG,    0x7);      // YanLei_Add:20200327.
-
-    //write_reg(TOP_CTRL_ANA_REG_ULL_HH_ADDR, 0x43);  // Remark, 20200413. XOSC Cap tuning. Should be calibreted for every project.
-    //write_reg(CORE_CTRL_VCO_ML_ADDR,        0x9B);  // Remark, 20200331
+    write_reg(TOP_CTRL_ADC_DELAY_REG,    0x7);      
 
     write_reg(CORE_CTRL_VCO_MH_ADDR,    0x53);
 
@@ -117,14 +113,6 @@ void sys_init()
     write_reg(ABB_MH,   0x83);
 
     write_reg(TOP_CTRL_GAIN_DAC_INI_ADDR,0x57);
-    //write_reg(TOP_CTRL_PLL_DIGITAL_FVCO_INI_ADDR,   0x02);//The register value should be set to the reset value(0x15)
-
-#ifdef  SOP16
-    write_reg(ANT_CAP_REG,  0xF9);  // 0xFF
-    write_reg(XMFR_CAP_REG, 0x80);  // 0xA5
-#endif
-
-
 
 #ifdef ENABLE_JTAG_ON_GPIO9_11
     sys_set_port_mux(PAD_GPIO_09, PAD_MUX_FUNCTION_1|3);//RXD
@@ -140,9 +128,7 @@ void sys_init()
 
 void sys_sleep_down(void)
 {
-	/*bug fixed:sleep can't wakeup,modified by flege,20200526*/
-	write_reg(0x40120134,0xD0);//before is 0xD0//0xD8//0xC8//0x40
-	
+	write_reg(0x40120134,0xD0);
     write_reg(TOP_POWER_CTRL_REG, 0x1);//sleep
 }
 

@@ -23,7 +23,8 @@ uint8_t tx_buf[31] = {30,0xff,
 
 void bal_beacon_txrx(u32 tx_cnt, u32 rx_cnt){
 	if(tx_cnt > 0)
-		ble_adv_send(0,tx_buf,31,tx_cnt*10*3,10,ADV_CHANNEL_BIT_37|ADV_CHANNEL_BIT_38|ADV_CHANNEL_BIT_39);
+		//ble_adv_send(0,tx_buf,31,tx_cnt*10*3,5,ADV_CHANNEL_BIT_37|ADV_CHANNEL_BIT_38|ADV_CHANNEL_BIT_39);
+		ble_adv_send(0,tx_buf,31,tx_cnt*5*3,5,ADV_CHANNEL_BIT_37|ADV_CHANNEL_BIT_38|ADV_CHANNEL_BIT_39);
 }
 
 

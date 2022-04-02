@@ -431,48 +431,146 @@ typedef enum rf_gfo_comp
 
 /* Function prototype -------------------------------------------*/
 
-
+/**
+ * @brief  Config syncwords, Premble + Access address. Send by LSB of [sw_high+sw_low].
+ * @param  channel                    channel index, 0/1. If you need 2 different syncwords, config it to 1.
+ * @param  sw_high                    1 Byte. MSB of Access address. Fpr example, send BLE packets, 0x8E in 0x8E89BED6).
+ * @param  sw_low                     4 Bytes.
+ */
 void rf_set_rx_sync_words( uint8_t channel, uint8_t sw_high, uint32_t sw_low);
+
+/**
+ * @brief  Config BaseBand RAM as FIFO or Single RAM.
+ * @param  bbram_model                @ref bbram_mode_t "bbram mode."
+ */
 void rf_set_bbram_mode( bbram_mode_t bbram_model );
+
+/**
+ * @brief  Config BaseBand as Tx or Rx.
+ * @param  bbram_model                @ref rx_tx_mode_t "Tx and Rx mode."
+ */
 void rf_set_rx_tx_mode( rx_tx_mode_t rx_tx_model );
+
+/**
+ * @brief  Init the function of RF.
+ */
 void rf_init(void);
+
+/**
+ * @brief  Start the function of RF, refer to MODULE_TEST for use.
+ */
 void rf_start(void);
 
+/**
+ * @brief  Get the offset of FIFO_RAM, if bbram config as FIFO function, refer to MODULE_TEST for use.
+ * @return uint8_t                    The offset of BB_RAM.
+ */
+uint8_t rf_get_buffer_offset(void);
+
+/**
+ * @brief  Get the status of RF interrupt.
+ * @return uint8_t                    @ref int status "user guide: reg_interrupt_RO"
+ */
+uint8_t rf_get_int_status(void);
+
+/**
+ * @brief  Cler the interrupt status of RF.
+ * @param  uint32_t                    @ref interrupt bit "user guide: intp_cls"
+ */
+void rf_int_clear( uint32_t int_clear );
+
+/**
+ * @brief  Breif
+ * @param  buffer_index               0 if single ram, cooperate rf_get_buffer_offset() if FIFO mode.
+ * @return int8_t                     the RSSI of received packets.
+ */
+int8_t  rf_get_rssi( uint8_t buffer_index );
+
+/**
+ * @brief  Config Sync bits of received packets. For example, 40_BIT needs to synchronize 40 bits.
+ * @param  sync_bits_mode             @ref bb_rx_syncword_mode_t "the choice of the supported sync_bits"
+ */
+void rf_set_rx_sync_bits(uint8_t sync_bits_mode);
+
+/**
+ * @brief  Config the length of RX packets.
+ * @param  channel_index              0/1, Cooperate with rf_set_rx_sync_words().
+ * @param  len_mode                   @ref bb_pack_len_mode_t "the supported len_mode." 
+ * @param  len                        the setting of length, 0 if mode is BB_PACK_LEN_AUTO.
+ */
+void rf_set_rx_len( bb_channel_t channel_index, bb_pack_len_mode_t len_mode, uint8_t len );
+
+/**
+ * @brief  The length of Tx packets, PDU length if send BLE packets.
+ * @param  tx_len                     the setting of length.
+ */
+void rf_set_tx_len( uint8_t tx_len );
+
+/**
+ * @brief  Config Tx premble.
+ * @param  pre_mode                   @ref bb_tx_pre_mode_t "premble mode"
+ * @param  pre                        the value of premble.
+ */
+void rf_set_tx_preamble( bb_tx_pre_mode_t pre_mode, uint32_t pre );
+
+/**
+ * @brief  Config Tx access address, send by LSB of [aa_high+aa_low] 
+ * @param  aa_mode                    @ref bb_tx_aa_mode_t "access address mode"
+ * @param  aa_high                    High-byte of access address. 0 if send BLE packets.
+ * @param  aa_low                     Low-byte of access address.
+ */
+void rf_set_tx_aa( bb_tx_aa_mode_t aa_mode, uint8_t aa_high, uint32_t aa_low );
+
+/**
+ * @brief  Get the length of Rx PDU, only support BLE packets.
+ * @param  buffer_index               0 if single ram, cooperate rf_get_buffer_offset() if FIFO mode.
+ * @return uint8_t                    the length of PDU.
+ */
+uint8_t rf_get_rx_payload_len(uint8_t buffer_index);
+
+/**
+ * @brief  Breif
+ * @param  buffer_index               0 if single ram, cooperate rf_get_buffer_offset() if FIFO mode.
+ * @return uint8_t                    the channel_idx of received packets, correspond to the channel of rf_set_rx_sync_words.
+ */
+uint8_t rf_get_data_from_channel( uint8_t buffer_index );
+
+/**
+ * @brief  Enable/Disable CRC and Whitening.
+ * @param  whiting_ctrl               ON/OFF.
+ * @param  crc_ctrl                   ON/OFF.
+ */
+void rf_set_whit_and_crc(bool whiting_ctrl, bool crc_ctrl);
+
+/**
+ * @brief  CRC error interrupt configuration.
+ * @param  on_off                     @ref bb_crc_rx_int_t "1: enable interrupt if crc error, 0: disable interrupt if crc error."
+ */
+void rf_set_crc_rx_int_mode( uint8_t on_off );
+
+/**
+ * @brief  Config RF power level
+ * @param  rf_power                   0~7
+ */
+void rf_set_power( uint8_t rf_power );
+
+
+/************** no use in common case *************/
 void rf_start_in_odd_frequency_point(void);
 void rf_set_recv_in_odd_frequency_point(void);
 void rf_set_odd_to_normal(void);
 uint8_t rf_frequency_corresponds_to_channel(uint16_t freq);
-
-
-uint8_t rf_get_buffer_offset(void);
 uint8_t rf_get_buffer_status(void);
-uint8_t rf_get_int_status(void);
 void rf_set_compensate( rf_gfo_comp_t gfo_comp );
-//void rf_set_int(rf_int_config_t config);
 void rf_enable_int( uint16_t int_en);
 void rf_disable_int( uint16_t int_dis);
 void rf_mask_int( uint16_t int_mask);
 void rf_unmask_int( uint16_t int_unmask);
-void rf_int_clear( uint32_t int_clear );
-int8_t  rf_get_rssi( uint8_t buffer_index );
-void rf_set_rx_sync_bits(uint8_t sync_bits_mode);
 void rf_set_rx_win_size(uint16_t win_size);
 void rf_set_bb_mode( rf_bb_mode_t rf_bb_mode);
-void rf_set_rx_len( bb_channel_t channel_index, bb_pack_len_mode_t len_mode, uint8_t len );
-void rf_set_tx_len( uint8_t tx_len );
 void rf_set_tx_pre_and_sync(void);
-void rf_set_tx_preamble( bb_tx_pre_mode_t pre_mode, uint32_t pre );
-void rf_set_tx_aa( bb_tx_aa_mode_t aa_mode, uint8_t aa_high, uint32_t aa_low );
-uint8_t rf_get_rx_payload_len(uint8_t buffer_index);
-uint8_t rf_get_data_from_channel( uint8_t buffer_index );
-void rf_set_whit_and_crc(bool whiting_ctrl, bool crc_ctrl);
-void rf_set_crc_rx_int_mode( uint8_t on_off );
 void rf_set_tx_pattern(void);
-
 void rf_bb_mode_config(void);
-void rf_set_power( uint8_t rf_power );
-
-
 
 #endif  // __RF_H_
 

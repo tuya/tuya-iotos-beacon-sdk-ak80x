@@ -44,7 +44,6 @@ void tccr_init(uint32_t check_count,enum en_tccr_int_type enable_int_type)
 	write_reg(TCCR_EN_ADDR, 0x00);//disable tccr first
 
     //config pad mux as tccr function
-    //write_reg(TCCR_GPIO_PORT, 0x33);//0x33 need check
     sys_set_port_mux(PAD_GPIO_07, PAD_MUX_FUNCTION_3 | 0x03);
 
     //timer reload
@@ -104,7 +103,7 @@ ATTRIBUTE_ISR ATTRIBUTE_WEAK void tccr_isr()
         tccr_count0 = read_reg(TCCR_CC0C_ADDR);
         tccr_count1 = read_reg(TCCR_CC1C_ADDR);
 
-        tccr_count1 = tccr_count1 - tccr_count0;//high time count
+        tccr_count1 = tccr_count1 - tccr_count0;     //high time count
         tccr_count0 = tccr_count0 - CHECK_AC_TIMEOUT;//low time count
     }
 #endif

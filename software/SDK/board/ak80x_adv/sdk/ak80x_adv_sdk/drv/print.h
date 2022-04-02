@@ -26,18 +26,9 @@ extern "C" {    // allow C++ to use these headers
 #include "config.h"
 
 /* Macro --------------------------------------------------------*/
-
-#ifdef  DEBUG
-
+  
 #define print   myPrintf
 void myPrintf(char *s, ...);
-
-#else   // DEBUG
-
-#define print   //myPrintf
-
-#endif
-
 
 /* Functions prototype ------------------------------------------*/
 
