@@ -25,7 +25,7 @@
 
 
 /****************************ABNORMAL PROTEC FUNCTION**************************/
-#define ABNORMAL_PROTECTION_TYPE                    ENABLE
+#define ABNORMAL_PROTECTION_TYPE                    DISABLE
 
 #define SYS_CRASH_WTD_RESET_ENABLE					DISABLE
 #if(SYS_CRASH_WTD_RESET_ENABLE)

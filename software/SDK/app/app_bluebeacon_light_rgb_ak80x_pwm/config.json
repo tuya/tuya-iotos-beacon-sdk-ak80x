@@ -1,0 +1,13 @@
+{
+    "base_on":[
+        "./components/ty_beacon",
+        "./components/ty_xxtea",
+        "./components/ty_base64",
+        "./components/ty_timing_beacon",
+        "./components/ty_rtc_beacon",
+        "./components/ty_light_driver_beacon"       
+    ],
+    "ide":{
+        "kind":"csky"
+    }
+}

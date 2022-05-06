@@ -143,7 +143,7 @@ void app_light_reset_run(void){
 			if(hal_clock_time_exceed(0,reset_judge_time*100000)){//300ms and 4s
 				if(reset_judge_time == 3){
 					reset_judge_time = 60;
-					if(0 == hal_storage_256_read_bytes(72, &cnt,1)){//success
+					if(0 == hal_storage_256_read_bytes(112, &cnt,1)){//success
 						if(cnt > RESET_MAX_CNT)cnt = 0;
 					}else{
 						cnt = 0;
@@ -155,11 +155,11 @@ void app_light_reset_run(void){
 						ty_beacon_start_pairing();
 						reset_judge_time = 0;
 					}
-					hal_storage_256_write_bytes(72, &cnt,1);
+					hal_storage_256_write_bytes(112, &cnt,1);
 				}else if(reset_judge_time == 60){
 					reset_judge_time = 0;
 					cnt = 0;
-					hal_storage_256_write_bytes(72, &cnt,1);
+					hal_storage_256_write_bytes(112, &cnt,1);
 				}
 			}
 		}
@@ -171,7 +171,7 @@ void app_light_reset_run(void){
 static uint8_t reset_cnt;
 uint8_t app_light_ctrl_data_reset_cnt_get(void)
 {
-	if(0 == hal_storage_256_read_bytes(72, &reset_cnt,1)){//success
+	if(0 == hal_storage_256_read_bytes(112, &reset_cnt,1)){//success
 		if(reset_cnt > RESET_MAX_CNT)reset_cnt = 0;
 	}else{
 		reset_cnt = 0;
@@ -220,7 +220,7 @@ void app_light_def_state_init(void){
 
 
 void app_dps_read_from_storage(void){
-	if((0 == hal_storage_256_read_bytes(56, (u8 *)(&light_value),sizeof(light_value_s)))&&(light_value.data_right_flag == 0xA5)){//success
+	if((0 == hal_storage_256_read_bytes(96, (u8 *)(&light_value),sizeof(light_value_s)))&&(light_value.data_right_flag == 0xA5)){//success
 	
 		if((light_value.light_disturb_flag == 1)&&(light_value.onoff == 0)){			
 			light_disturb_flag_temp = 1;
@@ -259,7 +259,7 @@ void app_dps_write_to_storage(){
 	static light_value_s pre_light_value = {1,1,0,1000,1000,1000,1000,0,0,0xA5};
 	if(0 == memcmp((u8 *)(&pre_light_value),(u8 *)(&light_value),sizeof(light_value_s)))return;
 	memcpy((u8 *)(&pre_light_value),(u8 *)(&light_value),sizeof(light_value_s));
-	hal_storage_256_write_bytes(56, (u8 *)(&pre_light_value),sizeof(light_value_s));
+	hal_storage_256_write_bytes(96, (u8 *)(&pre_light_value),sizeof(light_value_s));
 }
 
 uint32_t ir_code = 0;
@@ -453,109 +453,109 @@ static uint16_t uiLightToolGetMaxValue(uint16_t a, uint16_t b, uint16_t c)
 
 static void light_ctrl_shade_gradually(void)
 {
-	uint8_t i =0;
-    uint16_t iError[3];
-	static uint16_t first_iError[3];
-    uint16_t usMaxError = 0;
-    uint16_t uiStep[3];
-
-	
-    if( memcmp(&sence_ctrl_data.tTargetVal, &sence_ctrl_data.tCurrVal, sizeof(BP5758D_LIGHT_CONTRL_T)) != 0 ) {  /* exist error */
-        
-        /* calulate the error between current value and target value */
-		if(sence_ctrl_data.tTargetVal.usRed > sence_ctrl_data.tCurrVal.usRed){
-			iError[0] = sence_ctrl_data.tTargetVal.usRed - sence_ctrl_data.tCurrVal.usRed;
-		}else{
-			iError[0] =sence_ctrl_data.tCurrVal.usRed - sence_ctrl_data.tTargetVal.usRed;
-		}
-
-		if(sence_ctrl_data.tTargetVal.usGreen > sence_ctrl_data.tCurrVal.usGreen){
-			iError[1] = sence_ctrl_data.tTargetVal.usGreen - sence_ctrl_data.tCurrVal.usGreen;
-		}else{
-			iError[1] =sence_ctrl_data.tCurrVal.usGreen - sence_ctrl_data.tTargetVal.usGreen;
-		}
-
-		if(sence_ctrl_data.tTargetVal.usBlue > sence_ctrl_data.tCurrVal.usBlue){
-			iError[2] = sence_ctrl_data.tTargetVal.usBlue - sence_ctrl_data.tCurrVal.usBlue;
-		}else{
-			iError[2] =sence_ctrl_data.tCurrVal.usBlue - sence_ctrl_data.tTargetVal.usBlue;
-		}
-
-		
-		//TUYA_APP_LOG_DEBUG("iError: %d %d %d",iError[0],iError[1],iError[2]);
-		
-        usMaxError = uiLightToolGetMaxValue(iError[0],iError[1],iError[2]);		
-
-        if( TRUE == sence_ctrl_data.bFirstChange) {    /* calculate change scale */
-			for(i=0;i<3;i++){
-				first_iError[i] = iError[i];
-			}
-            sence_ctrl_data.bFirstChange = FALSE;
-        }
-
-				
-		for(i=0;i<3;i++)
-		{
-			if( usMaxError == iError[i] ) {
-					uiStep[i] = sence_ctrl_data.uiGainTemp;
-			} else {
-					uiStep[i] = first_iError[i] * sence_ctrl_data.uiGainTemp / usMaxError;
-			}
-		}
-
-
-		if(sence_ctrl_data.tTargetVal.usRed > sence_ctrl_data.tCurrVal.usRed){
-			if( iError[0] < uiStep[0] ) {
-				sence_ctrl_data.tCurrVal.usRed += iError[0];
-			}else{
-				sence_ctrl_data.tCurrVal.usRed += uiStep[0];
-			}
-		}else{
-			if( iError[0] < uiStep[0] ) {
-				sence_ctrl_data.tCurrVal.usRed -= iError[0];
-			}else{
-				sence_ctrl_data.tCurrVal.usRed -= uiStep[0];
-			}
-		}
-
-		if(sence_ctrl_data.tTargetVal.usGreen > sence_ctrl_data.tCurrVal.usGreen){
-			if( iError[1] < uiStep[1] ) {
-				sence_ctrl_data.tCurrVal.usGreen += iError[1];
-			}else{
-				sence_ctrl_data.tCurrVal.usGreen += uiStep[1];
-			}
-		}else{
-			if( iError[1] < uiStep[1] ) {
-				sence_ctrl_data.tCurrVal.usGreen -= iError[1];
-			}else{
-				sence_ctrl_data.tCurrVal.usGreen -= uiStep[1];
-			}
-		}
-
-		if(sence_ctrl_data.tTargetVal.usBlue > sence_ctrl_data.tCurrVal.usBlue){
-			if( iError[2] < uiStep[2] ) {
-				sence_ctrl_data.tCurrVal.usBlue += iError[2];
-			}else{
-				sence_ctrl_data.tCurrVal.usBlue += uiStep[2];
-			}
-		}else{
-			if( iError[2] < uiStep[2] ) {
-				sence_ctrl_data.tCurrVal.usBlue -= iError[2];
-			}else{
-				sence_ctrl_data.tCurrVal.usBlue -= uiStep[2];
-			}
-		}
-
- 
-		ty_light_driver_bp5758d_rgbcw(&sence_ctrl_data.tCurrVal);      
-		//TUYA_APP_LOG_DEBUG("tCurrVal: %d %d %d",sence_ctrl_data.tCurrVal.usRed,sence_ctrl_data.tCurrVal.usGreen,sence_ctrl_data.tCurrVal.usBlue);
-
-    } else { /* no error between target and current */				
-				//TUYA_APP_LOG_DEBUG("shade change no need, stop");
-		light_shade_flag = FALSE;   /* just stop the change */
-
-		ty_light_driver_bp5758d_rgbcw(&sence_ctrl_data.tTargetVal); 		
-    }
+//	uint8_t i =0;
+//    uint16_t iError[3];
+//	static uint16_t first_iError[3];
+//    uint16_t usMaxError = 0;
+//    uint16_t uiStep[3];
+//
+//	
+//    if( memcmp(&sence_ctrl_data.tTargetVal, &sence_ctrl_data.tCurrVal, sizeof(BP5758D_LIGHT_CONTRL_T)) != 0 ) {  /* exist error */
+//        
+//        /* calulate the error between current value and target value */
+//		if(sence_ctrl_data.tTargetVal.usRed > sence_ctrl_data.tCurrVal.usRed){
+//			iError[0] = sence_ctrl_data.tTargetVal.usRed - sence_ctrl_data.tCurrVal.usRed;
+//		}else{
+//			iError[0] =sence_ctrl_data.tCurrVal.usRed - sence_ctrl_data.tTargetVal.usRed;
+//		}
+//
+//		if(sence_ctrl_data.tTargetVal.usGreen > sence_ctrl_data.tCurrVal.usGreen){
+//			iError[1] = sence_ctrl_data.tTargetVal.usGreen - sence_ctrl_data.tCurrVal.usGreen;
+//		}else{
+//			iError[1] =sence_ctrl_data.tCurrVal.usGreen - sence_ctrl_data.tTargetVal.usGreen;
+//		}
+//
+//		if(sence_ctrl_data.tTargetVal.usBlue > sence_ctrl_data.tCurrVal.usBlue){
+//			iError[2] = sence_ctrl_data.tTargetVal.usBlue - sence_ctrl_data.tCurrVal.usBlue;
+//		}else{
+//			iError[2] =sence_ctrl_data.tCurrVal.usBlue - sence_ctrl_data.tTargetVal.usBlue;
+//		}
+//
+//		
+//		//TUYA_APP_LOG_DEBUG("iError: %d %d %d",iError[0],iError[1],iError[2]);
+//		
+//        usMaxError = uiLightToolGetMaxValue(iError[0],iError[1],iError[2]);		
+//
+//        if( TRUE == sence_ctrl_data.bFirstChange) {    /* calculate change scale */
+//			for(i=0;i<3;i++){
+//				first_iError[i] = iError[i];
+//			}
+//            sence_ctrl_data.bFirstChange = FALSE;
+//        }
+//
+//				
+//		for(i=0;i<3;i++)
+//		{
+//			if( usMaxError == iError[i] ) {
+//					uiStep[i] = sence_ctrl_data.uiGainTemp;
+//			} else {
+//					uiStep[i] = first_iError[i] * sence_ctrl_data.uiGainTemp / usMaxError;
+//			}
+//		}
+//
+//
+//		if(sence_ctrl_data.tTargetVal.usRed > sence_ctrl_data.tCurrVal.usRed){
+//			if( iError[0] < uiStep[0] ) {
+//				sence_ctrl_data.tCurrVal.usRed += iError[0];
+//			}else{
+//				sence_ctrl_data.tCurrVal.usRed += uiStep[0];
+//			}
+//		}else{
+//			if( iError[0] < uiStep[0] ) {
+//				sence_ctrl_data.tCurrVal.usRed -= iError[0];
+//			}else{
+//				sence_ctrl_data.tCurrVal.usRed -= uiStep[0];
+//			}
+//		}
+//
+//		if(sence_ctrl_data.tTargetVal.usGreen > sence_ctrl_data.tCurrVal.usGreen){
+//			if( iError[1] < uiStep[1] ) {
+//				sence_ctrl_data.tCurrVal.usGreen += iError[1];
+//			}else{
+//				sence_ctrl_data.tCurrVal.usGreen += uiStep[1];
+//			}
+//		}else{
+//			if( iError[1] < uiStep[1] ) {
+//				sence_ctrl_data.tCurrVal.usGreen -= iError[1];
+//			}else{
+//				sence_ctrl_data.tCurrVal.usGreen -= uiStep[1];
+//			}
+//		}
+//
+//		if(sence_ctrl_data.tTargetVal.usBlue > sence_ctrl_data.tCurrVal.usBlue){
+//			if( iError[2] < uiStep[2] ) {
+//				sence_ctrl_data.tCurrVal.usBlue += iError[2];
+//			}else{
+//				sence_ctrl_data.tCurrVal.usBlue += uiStep[2];
+//			}
+//		}else{
+//			if( iError[2] < uiStep[2] ) {
+//				sence_ctrl_data.tCurrVal.usBlue -= iError[2];
+//			}else{
+//				sence_ctrl_data.tCurrVal.usBlue -= uiStep[2];
+//			}
+//		}
+//
+// 
+//		ty_light_driver_bp5758d_rgbcw(&sence_ctrl_data.tCurrVal);      
+//		//TUYA_APP_LOG_DEBUG("tCurrVal: %d %d %d",sence_ctrl_data.tCurrVal.usRed,sence_ctrl_data.tCurrVal.usGreen,sence_ctrl_data.tCurrVal.usBlue);
+//
+//    } else { /* no error between target and current */				
+//				//TUYA_APP_LOG_DEBUG("shade change no need, stop");
+//		light_shade_flag = FALSE;   /* just stop the change */
+//
+//		ty_light_driver_bp5758d_rgbcw(&sence_ctrl_data.tTargetVal); 		
+//    }
 }
 
 
@@ -583,21 +583,25 @@ static void opLightCtrlSceneChange(uint8_t sceneunit, uint8_t uispeed, uint8_t *
 	//sence_ctrl_data.uiGainTemp = 1000 / (uiSpeed / 10) + 0.5;//省代码
 	sence_ctrl_data.uiGainTemp = 6;
 	
-	if(bSceneSetFirstFlag == TRUE) {		
-		light_adjust_HSV_hw(hue, saturation, value);
-		memcpy(&sence_ctrl_data.tCurrVal, &sence_ctrl_data.tTargetVal, sizeof(sence_ctrl_data.tTargetVal));
-		bSceneSetFirstFlag = FALSE;
-	}else{
-		value = (value-10)*90/99 + 100;//10%——100%
-		TColor color = HSV2RGB(hue,saturation,value);
-		sence_ctrl_data.tTargetVal.usRed = color.R;
-		sence_ctrl_data.tTargetVal.usGreen = color.G;
-		sence_ctrl_data.tTargetVal.usBlue = color.B;
-		
-		light_shade_flag = TRUE;
-		sence_ctrl_data.bFirstChange = TRUE;		
-	}
-}
+//	if(bSceneSetFirstFlag == TRUE) {		
+//		light_adjust_HSV_hw(hue, saturation, value);
+//		memcpy(&sence_ctrl_data.tCurrVal, &sence_ctrl_data.tTargetVal, sizeof(sence_ctrl_data.tTargetVal));
+//		bSceneSetFirstFlag = FALSE;
+//	}else{
+//		value = (value-10)*90/99 + 100;//10%——100%
+//		TColor color = HSV2RGB(hue,saturation,value);
+//		sence_ctrl_data.tTargetVal.usRed = color.R;
+//		sence_ctrl_data.tTargetVal.usGreen = color.G;
+//		sence_ctrl_data.tTargetVal.usBlue = color.B;
+//		
+//		light_shade_flag = TRUE;
+//		sence_ctrl_data.bFirstChange = TRUE;		
+//	}
+//if(bSceneSetFirstFlag == TRUE) {
+	light_adjust_HSV_hw(hue, saturation, value);
+	bSceneSetFirstFlag = FALSE;
+//}
+}	
 
 
 
@@ -648,7 +652,7 @@ void scene_run(void){
 					}break;
 					
 					case SCENE_MODEL4:{				
-						opLightCtrlSceneChange(2, 2000, sence_data1);					
+						opLightCtrlSceneChange(4, 2000, sence_data1);					
 					}break;
 
 					case SCENE_MODEL7:{												
@@ -667,13 +671,13 @@ void scene_run(void){
 				}
 			}
 
-			if(light_shade_flag == TRUE){
-				static u32 T_shade = 0;
-				if(hal_clock_time_exceed(T_shade,10000)){
-					T_shade = hal_clock_get_system_tick();
-					light_ctrl_shade_gradually();
-				}				
-			}			
+//			if(light_shade_flag == TRUE){
+//				static u32 T_shade = 0;
+//				if(hal_clock_time_exceed(T_shade,10000)){
+//					T_shade = hal_clock_get_system_tick();
+//					light_ctrl_shade_gradually();
+//				}				
+//			}			
 		}break;
 #endif		
 		default:
@@ -756,39 +760,45 @@ u8 timing_end_cb(u8 index){
     return 0;
 }
 
-
-void app_dps_download(unsigned char dpid, unsigned char dpty, unsigned char dplen, unsigned char *dpvalue){
+void app_dps_download(unsigned char kind, unsigned char dpid, unsigned char dpty, unsigned char dplen, unsigned char *dpvalue){
 //    print("dp:%d [%d]\r\n",dpid,dpvalue[0]);
 //	uart_putc(dpid);
 //	uint8_t i = 0;
 //	for(i=0;i<dplen;i++){
 //		uart_putc(dpvalue[i]);		
 //	}
+	u8 flag = 0;
+	u16 remote_lightness;
 	switch(dpid){
         case 0x01://onoff
 			light_value.onoff = dpvalue[0];
 			countdown = 0; 
-			app_light_write_to_storage_start();
+			flag = 1;
+			sence_uint_cnt_time =0;
+			//app_light_write_to_storage_start();
 //			app_dps_upload(dpid,dpty,dplen,dpvalue);
             break;
         case 0x02://work_mode
 			if(dpvalue[0] == SCENE_WHITE){
 				light_value.scene_mode = dpvalue[0];
 //				app_dps_upload(dpid,dpty,dplen,dpvalue);				
-			app_light_write_to_storage_start();
+			flag = 1;
+			//app_light_write_to_storage_start();
 			}			
             break;
 #if WHITE_FUNCTION			
        case 0x03://bright_value
 			light_value.scene_mode = SCENE_WHITE;
 			light_value.B = ((dpvalue[2]<<8) | dpvalue[3]);
-			app_light_write_to_storage_start();
+			flag = 1;
+			//app_light_write_to_storage_start();
 //			app_dps_upload(dpid,dpty,dplen,dpvalue);
            break;
        case 0x04://temp_value
 			light_value.scene_mode = SCENE_WHITE;
 			light_value.T = ((dpvalue[2]<<8) | dpvalue[3]);
-			app_light_write_to_storage_start();
+			flag = 1;
+			//app_light_write_to_storage_start();
 //			app_dps_upload(dpid,dpty,dplen,dpvalue);		
            break;
 #endif	
@@ -801,7 +811,8 @@ void app_dps_download(unsigned char dpid, unsigned char dpty, unsigned char dple
 //			bSceneStopFlag = FALSE;
 			light_shade_flag = FALSE;
 			sence_uint_cnt_time = 0;
-			app_light_write_to_storage_start();
+			flag = 1;
+			//app_light_write_to_storage_start();
 		}break;
 #endif			
 //		case 11:{//HSV
@@ -818,8 +829,9 @@ void app_dps_download(unsigned char dpid, unsigned char dpty, unsigned char dple
 			app_light_ctrl_data_not_disturb_set(dpvalue[0]);
 //			app_dps_upload(dpid,dpty,dplen,dpvalue);
 //			app_dps_write_to_storage();
-			app_light_write_to_storage_start();
-			light_time_setok_flag = 1;
+			flag = 1;
+			//app_light_write_to_storage_start();
+           light_time_setok_flag = 1;
            }
            break;
 #endif
@@ -907,17 +919,56 @@ void app_dps_download(unsigned char dpid, unsigned char dpty, unsigned char dple
 			music_s = dpvalue[3] * 10;//1000
 			music_v = dpvalue[4] * 10;//1000
 			light_value.scene_mode = SCENE_MUSIC;
+			flag = 1;
+			//app_light_write_to_storage_start();
             break;
 #endif
+        case 19://lightness
+            remote_lightness = (dpvalue[1] << 8) | dpvalue[2];
+            if(0x02== dpvalue[0])
+            {
+                if((0x01==light_value.scene_mode)){
+
+                }else{
+                    //判断是否有此功能
+                    if((remote_lightness)<10)
+                    {
+                        remote_lightness = 10;
+                    }
+                    light_value.scene_mode = SCENE_WHITE;
+                    light_value.B = remote_lightness;
+                }
+            }
+//            else if(0x00== dpvalue[0])
+//            {
+//                if((remote_lightness)<10)
+//                {
+//                    remote_lightness = 10;
+//                }
+//                light_value.scene_mode = SCENE_WHITE;
+//                light_value.B = remote_lightness;
+//            }
+//            else if(0x01== dpvalue[0])
+//            {
+//                if((remote_lightness)<10)
+//                {
+//                    remote_lightness = 10;
+//                }
+//                light_value.V = remote_lightness;//1000
+//                light_value.scene_mode = SCENE_COLOR;
+//            }
+			flag = 1;
+			//app_light_write_to_storage_start();
+            break;
+			
         default:
             break;
     }
+	if(flag == 1)
+	{
+		app_light_write_to_storage_start();
+	}
 }
-
-
-
-
-
 
 void app_ir_cmd(unsigned int code,uint8_t long_press_time_s){
 	switch(code){
@@ -1023,29 +1074,15 @@ void ty_beacon_event_cb(ty_beacon_event_e e, void *params){
     }
 }
 
-bool is_system_time_exceed_1s(void)
-{
-    static u32 pre_time = 0;
-    if(hal_clock_time_exceed(pre_time, 1000000)){
-        pre_time = hal_clock_get_system_tick();
-        return true;
-    }
-
-    return false;
-}
-
 void tick_countdown_event_handle(void)
 {
-    if((countdown != 0) && is_system_time_exceed_1s()){
-        if ((--countdown) == 0){
+    if(countdown != 0){
+		countdown --;
+        if (countdown == 0){ // 倒计时结束关闭灯光
             set_onoff(countdown_target_onoff);
-        }
-        if(countdown % 60 == 0){ // 1 min storage
-            app_light_write_to_storage_start();
+			app_light_write_to_storage_start();
         }
     }
-
-    return;
 }
 
 void app_light_run(void){
