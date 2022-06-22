@@ -1,5 +1,13 @@
 English | [简体中文](./README_cn.md)
 
+--- 
+
+**NOTE：不再维护，新方案接入请使用 TuyaOS！**
+
+**NOTE：No more maintenance, please use TuyaOS !**
+
+---
+
 # Tuya IoTOS Beacon SDK AK80x
 Demo codes for Tuya IoTOS Beacon SDK FOR AK80x.
 
