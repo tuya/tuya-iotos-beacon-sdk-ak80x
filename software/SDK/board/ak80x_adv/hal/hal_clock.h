@@ -22,6 +22,7 @@ enum{
 
 extern u32 hal_clock_get_system_tick(void);
 extern u32 hal_clock_time_exceed(u32 ref, u32 span_us);
+extern u32 hal_clock_time_power_exceed(u32 ref, u32 span_us);
 
 
 #endif

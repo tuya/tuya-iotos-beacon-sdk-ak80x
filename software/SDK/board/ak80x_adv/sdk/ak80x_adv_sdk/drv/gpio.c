@@ -88,7 +88,7 @@ void gpio_set_bit(uint32_t bit, uint8_t data)
 
 uint32_t gpio_get_bits(uint32_t bit)
 {
-    uint32_t reg = 0;
+    volatile uint32_t reg = 0;
 
     reg = read_reg( GPIO_EXT_PORT_A) ;
     reg &= bit;

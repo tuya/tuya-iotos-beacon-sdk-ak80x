@@ -14,5 +14,7 @@
 u8 hal_storage_256_init(void);
 u8 hal_storage_256_read_bytes(u16 offset, u8* pdata, u8 len);
 u8 hal_storage_256_write_bytes(u16 offset, u8* pdata, u8 len);
+u8 hal_storage_256_read_all(void);
+u8 hal_storage_256_write_all(u8 state);
 
 #endif

@@ -47,4 +47,15 @@ u32 hal_clock_time_exceed(u32 ref, u32 span_us){
 	}
 }
 
+u32 hal_clock_time_power_exceed(u32 ref, u32 span_us){
+	u32 tick_temp_power = hal_clock_get_system_tick();
+	
+	if(tick_temp_power >= ref)
+	{
+		return ((tick_temp_power - ref) > span_us*HAL_CLOCK_1US_TICKS); 
+	}else{
+		return ((0xFFFFFFFF - ref + tick_temp_power) > span_us*HAL_CLOCK_1US_TICKS);
+	}
+}
+
 
