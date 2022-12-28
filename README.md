@@ -6,6 +6,16 @@ English | [简体中文](./README_cn.md)
 
 **NOTE：No more maintenance, please use TuyaOS !**
 
+</br>
+
+**Branch（分支介绍）：**
+
+branch | detail
+---|---
+master,dev_light_with_remoter | lights demo (灯的 DEMO)
+dev_remoter | remoter demo (遥控器的 DEMO)
+dev_light_fzy | customized for users (为某一用户特殊定制分支)
+
 ---
 
 # Tuya IoTOS Beacon SDK AK80x
