@@ -8,6 +8,8 @@
 #ifndef _BOARD_H
 #define _BOARD_H
 
+#define LITTLE_END 1
+
 #include "hal_clock.h"
 //#include "hal_flash.h"
 //#include "hal_gpio.h"

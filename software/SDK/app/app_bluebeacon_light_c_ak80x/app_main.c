@@ -129,6 +129,7 @@ int main(void)
 #if AUTHKEY_X//EEPROM
 	u8 * authkey = (u8 *)0x3FC4;
 	u8 * mac = (u8 *)0x3FE4;
+	u8 * base64_mac = (u8 *)0x3FEA;
 #endif
 
 #if AUTHKEY_12//IOS  TEST 1 
@@ -141,10 +142,11 @@ int main(void)
 #endif
 	
 	u8 pid[9] = "        ";//rc0ieijt";//"3tiavcvp";//"y0jtgfql";//"xniu6ibw";mjy40xws
-	u8 version = 0x12;//1.2
+	u8 version = 0x20;//2.0
 	u16 kind = 0x1011;
 	
     app_light_init();
+	ty_beacon_state_set(DEVICE_STATE_PAIRED);                  //上电常亮或上电闪烁提醒配置         1.DEVICE_STATE_PAIRED 上电常亮   2.上电闪烁提醒DEVICE_STATE_NOT_PAIRED
 	ty_beacon_init(mac,authkey,pid,version,kind);
 	//btn_init();
 
@@ -164,9 +166,9 @@ int main(void)
 
 #if BP5758D_CONTROL_FUNCTION
 	//bp5758d_init
-	ty_light_driver_bp5758d_init(6, 6, 6, 27, 27); // R G B C W 电流
+	ty_light_driver_bp5758d_init(2, 1, 0, 4, 3, 6, 27); // r/g/b/c/w pin num colar and white current 
 #endif
-
+	beacon_remote_pair_windowns_pramer_set(TRUE,30);//1.配对窗口标志    TRUE有配对窗口    FALSE无配对窗口      2 配对时间（秒）
 	
 	if(ty_beacon_get_state() == DEVICE_STATE_NOT_PAIRED){
 		ty_beacon_start_pairing();		
@@ -180,9 +182,6 @@ int main(void)
 
 	while(1)
 	{
-#if COUNT_DOWN_FUNCTION
-        tick_countdown_event_handle(); // 倒计时事件处理
-#endif
 		static u32 T_2ms = 0;
 		if(hal_clock_time_exceed(T_2ms,2000)){
 			T_2ms = hal_clock_get_system_tick();
@@ -201,8 +200,16 @@ int main(void)
 		
 		
         ty_beacon_run();
-				
-	
+
+		static u32 Beacon_pre_time = 0;
+		if(hal_clock_time_exceed(Beacon_pre_time, 1000000)){	
+			Beacon_pre_time = hal_clock_get_system_tick();
+#if COUNT_DOWN_FUNCTION
+			tick_countdown_event_handle(); // 倒计时事件处理
+#endif
+			tick_remote_pair_windowns_countdown_event_handle();
+			tick_remote_countdown_event_handle();
+		}
 	}
 }
 

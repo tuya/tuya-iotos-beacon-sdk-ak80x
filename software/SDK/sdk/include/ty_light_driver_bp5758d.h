@@ -37,15 +37,13 @@ typedef struct
  * @param {bp5758d_init_t* sm1658cj_init}
  * @retval: OPERATE_LIGHT
  */
-OPERATE_LIGHT ty_light_driver_bp5758d_init(u8 current_r, u8 currrent_g, u8 current_b, u8 current_c, u8 current_w);
-
+OPERATE_LIGHT ty_light_driver_bp5758d_init(u8 r_pin_num, u8 g_pin_num, u8 b_pin_num, u8 c_pin_num, u8 w_pin_num, u8 color_current, u8 white_current);
 /**
  * @brief: bp5758d send RGBCW function
  * @param {bp5758d_color_t *color_data}
  * @retval: OPERATE_LIGHT
  */
 OPERATE_LIGHT ty_light_driver_bp5758d_rgbcw(BP5758D_LIGHT_CONTRL_T *color_data);
-
 
 
 #ifdef __cplusplus

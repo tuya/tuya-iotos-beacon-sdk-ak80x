@@ -42,13 +42,16 @@ typedef enum{
 //authkey 16 bytes (authkey[0~16],authkey total 32 bytes)
 //version 1 byte(0.0~9.9)
 //kind(same as sig mesh, big end)
+void ty_beacon_state_set(u8 state);
 u8 ty_beacon_init(u8 *pmac, u8 *pauthkey, u8 *ppid, u8 version, u16 kind);
 u8 ty_beacon_download(u8 *rx_buf, u8 len_pdu, u8 rssi);
 u8 ty_beacon_send(u32 cycle, u8 send_times, u8 cmd, u8* params, u8 params_len, u8 tp);
 u8 ty_beacon_start_pairing(void);
 state_machine_e ty_beacon_get_state(void);
 u8 ty_beacon_run(void);
-
+void tick_remote_pair_windowns_countdown_event_handle(void);
+void tick_remote_countdown_event_handle(void);
+void beacon_remote_pair_windowns_pramer_set(u8 pair_mode, u32 windowns_time );
 void __attribute__((weak)) ty_beacon_event_cb(ty_beacon_event_e e, void *params);
 void __attribute__((weak)) ty_beacon_enter_test_mode_cb(u8 rssi);
 
